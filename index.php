@@ -1,6 +1,7 @@
 <?php
 // index.php - The Front Controller
 
+
 // Start session immediately for authentication management in Phase 4/5
 session_start();
 

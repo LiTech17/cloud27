@@ -139,6 +139,17 @@
                     <li><a href="<?= BASE_PATH ?>/about">About</a></li>
                     <li><a href="<?= BASE_PATH ?>/services">Services</a></li>
                     <li><a href="<?= BASE_PATH ?>/contact">Contact</a></li>
+                    
+                    <?php 
+                    // Check if the user is logged in
+                    if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true): 
+                    ?>
+                        <li><a href="<?= BASE_PATH ?>/admin/dashboard" 
+                               style="font-weight: bold; color: #28a745;">Dashboard</a></li>
+                        <li><a href="<?= BASE_PATH ?>/logout" style="color: #dc3545;">Logout</a></li>
+                    <?php else: ?>
+                        <li><a href="<?= BASE_PATH ?>/login">Login</a></li>
+                    <?php endif; ?>
                 </ul>
             </nav>
             <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Toggle navigation">☰</button>
