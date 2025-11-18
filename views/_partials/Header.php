@@ -133,12 +133,12 @@
 <body>
     <header>
         <div class="container header-content">
-            <h1><a href="/">Cloud27</a></h1>
+            <h1><a href="<?= BASE_PATH ?>/">Cloud27</a></h1>
             <nav>
                 <ul class="nav-links" id="main-nav">
-                    <li><a href="/about">About</a></li>
-                    <li><a href="/services">Services</a></li>
-                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="<?= BASE_PATH ?>/about">About</a></li>
+                    <li><a href="<?= BASE_PATH ?>/services">Services</a></li>
+                    <li><a href="<?= BASE_PATH ?>/contact">Contact</a></li>
                 </ul>
             </nav>
             <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Toggle navigation">☰</button>

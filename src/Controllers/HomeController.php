@@ -1,37 +1,37 @@
 <?php
 // src/Controllers/HomeController.php
-namespace Controllers; // <-- ADDED
+
+namespace Controllers;
+
+use Models\ServiceModel; // Import the Model to fetch data
 
 class HomeController extends BaseController {
-    
-    /**
-     * Handles the root route: /
-     */
+
     public function index(): void {
-        $data = [
-            'pageTitle' => 'Cloud27 - Home | Modern Cloud Solutions',
-            'isHomePage' => true 
-        ];
-        $this->render('home', $data);
+        // 1. Instantiate the Service Model
+        $serviceModel = new ServiceModel();
+        
+        // 2. Fetch the data (all services)
+        $services = $serviceModel->getAllServices(); 
+        
+        // 3. Render the home view, passing the dynamic data
+        $this->render('home', [
+            'title' => 'Welcome to Cloud27',
+            'services' => $services ?: [] // Pass services data or an empty array
+        ]);
     }
 
-    /**
-     * Handles the /about route
-     */
     public function about(): void {
-        $data = [
-            'pageTitle' => 'About Us | Our Philosophy and Team'
-        ];
-        $this->render('about', $data);
+        $this->render('about', ['title' => 'About Us']);
     }
 
-    /**
-     * Handles the /services route
-     */
     public function services(): void {
-        $data = [
-            'pageTitle' => 'Our Services | Architecture, Development, and Support'
-        ];
-        $this->render('services', $data);
+        // This method is already correct
+        $serviceModel = new ServiceModel();
+        $services = $serviceModel->getAllServices();
+        $this->render('services', [
+            'title' => 'Our Services',
+            'services' => $services ?: [] 
+        ]);
     }
 }

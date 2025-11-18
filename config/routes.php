@@ -2,15 +2,18 @@
 // config/routes.php
 
 /**
- * Defines the application's routing map.
- * Format: [URI => [ControllerClass (FQN), Method]]
+ * Defines the application's routing map, keyed by HTTP Method.
  */
 $routes = [
-    // Use the Fully Qualified Name (FQN): 'Controllers\ControllerName'
-    '/'          => ['Controllers\HomeController', 'index'],
-    '/about'     => ['Controllers\HomeController', 'about'],
-    '/services'  => ['Controllers\HomeController', 'services'],
-    '/contact'   => ['Controllers\ContactController', 'showForm'], 
+    'GET' => [
+        '/'           => ['Controllers\HomeController', 'index'],
+        '/about'      => ['Controllers\HomeController', 'about'],
+        '/services'   => ['Controllers\HomeController', 'services'],
+        '/contact'    => ['Controllers\ContactController', 'showForm'], // Handles page load
+    ],
 
-    // Future routes will be added here 
+    'POST' => [
+        // This is the CRITICAL ADDITION for form submissions!
+        '/contact'    => ['Controllers\ContactController', 'submitForm'], // Handles AJAX/POST submission
+    ]
 ];

@@ -1,20 +1,49 @@
-<h2>Our Services</h2>
-<p>We offer a range of services designed for businesses seeking bespoke, high-performance cloud applications.</p>
+<?php 
+// views/services.php
 
-<section style="margin-top: 30px;">
-    <h3>Key Offerings</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 4px;">
-            <h4>Cloud Architecture</h4>
-            <p>Designing secure, scalable infrastructure on AWS, Azure, or Firebase.</p>
+/**
+ * @var array $data Contains data passed from the controller, including 'services'
+ */
+$services = $data['services'] ?? [];
+?>
+
+<div class="container">
+    <h2>Explore Our Services</h2>
+    <p>We offer tailored solutions designed to drive your business forward. Here are some of our core offerings.</p>
+
+    <?php if (empty($services)): ?>
+        <div style="padding: 20px; border: 1px solid #ffc107; background-color: #fff3cd; color: #856404; margin-top: 20px;">
+            <p>We currently have no services listed. Please check back later!</p>
         </div>
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 4px;">
-            <h4>Custom PHP/JS Development</h4>
-            <p>Building bespoke web applications, APIs, and microservices.</p>
+    <?php else: ?>
+        
+        <div class="service-grid" style="
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 30px; 
+            margin-top: 40px;
+        ">
+        
+        <?php foreach ($services as $service): ?>
+            <div class="service-card" style="
+                border: 1px solid #ddd; 
+                border-radius: 8px; 
+                padding: 25px; 
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+                transition: transform 0.3s;
+            ">
+                
+                <h3 style="color: #007bff; margin-top: 0;">
+                    <span class="<?= htmlspecialchars($service['icon_class'] ?? 'bi-gear') ?>" 
+                          style="margin-right: 10px; font-size: 1.2em;"></span>
+                    <?= htmlspecialchars($service['title']) ?>
+                </h3>
+                
+                <p><?= nl2br(htmlspecialchars($service['description'])) ?></p>
+            </div>
+        <?php endforeach; ?>
+
         </div>
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 4px;">
-            <h4>Migration & Optimization</h4>
-            <p>Moving legacy systems to modern cloud environments and optimizing performance.</p>
-        </div>
-    </div>
-</section>
+    <?php endif; ?>
+
+</div>  
