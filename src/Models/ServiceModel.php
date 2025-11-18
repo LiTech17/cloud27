@@ -3,32 +3,82 @@
 
 namespace Models;
 
-use Database; // Import the unnamespaced Database class
+use Database;
 
-/**
- * Manages data interactions for the 'services' table.
- */
 class ServiceModel {
     
     /**
-     * Fetches all services from the database.
-     * * @return array|bool Returns an array of services or false on failure.
+     * Retrieves all services from the database.
      */
-    public function getAllServices(): array|bool {
+    public function getAllServices(): array {
         try {
-            // Get the single instance of the database connection
             $db = Database::getInstance();
-            
-            // Prepare and execute the query
-            $stmt = $db->run("SELECT id, title, description, icon_class FROM services ORDER BY id ASC");
-            
-            // Return all fetched results
+            $sql = "SELECT id, title, description FROM services ORDER BY id DESC";
+            $stmt = $db->run($sql);
             return $stmt->fetchAll();
-
         } catch (\PDOException $e) {
-            // Log the error for debugging, but return false to the controller
-            error_log("ServiceModel Error: Could not fetch services. " . $e->getMessage());
-            return false;
+            error_log("ServiceModel Error (getAllServices): " . $e->getMessage());
+            return []; // Return empty array on failure
         }
     }
+
+    /** * Retrieves a single service by its ID. (READ for C/U/D) 
+     */ 
+    public function getServiceById(int $id): array|bool { 
+        try { 
+            $db = Database::getInstance(); 
+            $sql = "SELECT id, title, description FROM services WHERE id = ?"; 
+            $stmt = $db->run($sql, [$id]); 
+            return $stmt->fetch(); 
+        } catch (\PDOException $e) { 
+            error_log("ServiceModel Error (getServiceById): " . $e->getMessage()); 
+            return false; 
+        } 
+    } 
+
+    /** * Creates a new service. (CREATE) 
+     * @param array $data ['title' => '...', 'description' => '...'] 
+     */ 
+    public function createService(array $data): bool { 
+        try { 
+            $db = Database::getInstance(); 
+            $sql = "INSERT INTO services (title, description) VALUES (?, ?)"; 
+            $db->run($sql, [$data['title'], $data['description']]); 
+            return true; 
+        } catch (\PDOException $e) { 
+            error_log("ServiceModel Error (createService): " . $e->getMessage()); 
+            return false; 
+        } 
+    } 
+
+    /** * Updates an existing service. (UPDATE) 
+     * @param int $id The ID of the service to update. 
+     * @param array $data ['title' => '...', 'description' => '...'] 
+     */ 
+    public function updateService(int $id, array $data): bool { 
+        try { 
+            $db = Database::getInstance(); 
+            $sql = "UPDATE services SET title = ?, description = ? WHERE id = ?"; 
+            $db->run($sql, [$data['title'], $data['description'], $id]); 
+            return true; 
+        } catch (\PDOException $e) { 
+            error_log("ServiceModel Error (updateService): " . $e->getMessage()); 
+            return false; 
+        } 
+    } 
+
+    /** * Deletes a service by its ID. (DELETE) 
+     */ 
+    public function deleteService(int $id): bool { 
+        try { 
+            $db = Database::getInstance(); 
+            $sql = "DELETE FROM services WHERE id = ?"; 
+            $db->run($sql, [$id]); 
+            // The row count check is safe using PDO statements
+            return $db->run("SELECT ROW_COUNT()")->fetchColumn() > 0;
+        } catch (\PDOException $e) { 
+            error_log("ServiceModel Error (deleteService): " . $e->getMessage()); 
+            return false; 
+        } 
+    } 
 }

@@ -3,80 +3,170 @@
 
 namespace Controllers;
 
+// --- REQUIRED DEPENDENCIES ---
 use Models\UserModel;
+use Models\ServiceModel;
+// --- --------------------- ---
 
 class AdminController extends BaseController {
 
-    // --- 1. DISPLAY LOGIN FORM ---
-    public function showLogin(): void {
-        // Only show the login page if the user is not already logged in
-        if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true) {
-            header('Location: ' . BASE_PATH . '/admin/dashboard');
-            exit;
-        }
+    // ------------------------------------------------------------------------
+    // 1. AUTHENTICATION METHODS (Place the missing ones here)
+    // ------------------------------------------------------------------------
 
+    /**
+     * Display the login form view.
+     */
+    public function showLogin(): void {
         $this->render('login', ['title' => 'Admin Login']);
     }
 
-    // --- 2. PROCESS LOGIN FORM (POST) ---
+    /**
+     * Process the login form submission.
+     */
     public function processLogin(): void {
-        $username = trim($_POST['username'] ?? '');
+        $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
-        $error = '';
 
-        if (empty($username) || empty($password)) {
-            $error = 'Both fields are required.';
+        $userModel = new UserModel();
+
+        if ($userModel->authenticate($username, $password)) {
+            // Successful login, set session variables
+            $_SESSION['is_logged_in'] = true;
+            $_SESSION['username'] = $username;
+            header('Location: ' . BASE_PATH . '/admin/dashboard');
+            exit;
         } else {
-            $userModel = new UserModel();
-            $user = $userModel->findByUsername($username);
-
-            // Check if user exists and password is correct
-            if ($user && password_verify($password, $user['password'])) {
-                
-                // Success: Start session, set flags, and redirect
-                $_SESSION['is_logged_in'] = true;
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                
-                header('Location: ' . BASE_PATH . '/admin/dashboard');
-                exit;
-
-            } else {
-                $error = 'Invalid username or password.';
-            }
+            // Failed login
+            $_SESSION['error'] = 'Invalid username or password.';
+            header('Location: ' . BASE_PATH . '/login');
+            exit;
         }
-        
-        // Render login view again with error message if authentication fails
-        $this->render('login', [
-            'title' => 'Admin Login',
-            'error' => $error,
-            'username_value' => htmlspecialchars($username) // Keep username populated
-        ]);
     }
 
-    // --- 3. LOGOUT ---
+    /**
+     * Handles user logout by destroying the session.
+     */
     public function logout(): void {
-        // Clear all session variables
-        $_SESSION = [];
-        
-        // Destroy the session
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
-        }
+        // Destroy the current session
+        session_unset();
         session_destroy();
-        
-        // Redirect to login page
-        header('Location: ' . BASE_PATH . '/login');
+
+        // Redirect the user to the homepage
+        header('Location: ' . BASE_PATH . '/');
         exit;
     }
 
-    // --- 4. ADMIN DASHBOARD (Protected) ---
     public function dashboard(): void {
-        // Protection check will be added in Step 5.5
         $this->render('admin/dashboard', ['title' => 'Admin Dashboard']);
+    }
+
+    // ------------------------------------------------------------------------
+    // 2. CRUD METHODS (The complete methods you provided)
+    // ------------------------------------------------------------------------
+
+    /**
+     * 1. Display the list of all services (READ).
+     */
+    public function listServices(): void {
+        $serviceModel = new ServiceModel();
+        $services = $serviceModel->getAllServices();
+
+        $this->render('admin/services', [
+            'title' => 'Manage Services',
+            'services' => $services
+        ]);
+    }
+
+    /**
+     * 2. Display the form for adding a new service or editing an existing one (CREATE/UPDATE).
+     */
+    public function showEditForm(): void {
+        $service = null;
+        // Uses $_GET since we link to it as /admin/services/edit?id=X
+        $id = $_GET['id'] ?? null; 
+        $error = $_SESSION['error'] ?? null;
+        unset($_SESSION['error']);
+
+        if ($id) {
+            $serviceModel = new ServiceModel();
+            $service = $serviceModel->getServiceById((int)$id);
+
+            if (!$service) {
+                $_SESSION['message'] = 'Service not found.';
+                header('Location: ' . BASE_PATH . '/admin/services');
+                exit;
+            }
+        }
+
+        $this->render('admin/edit_service', [
+            'title' => ($id ? 'Edit' : 'Add') . ' Service',
+            'service' => $service,
+            'error' => $error
+        ]);
+    }
+
+    /**
+     * 3. Process the form submission to save (add or edit) a service (CREATE/UPDATE POST).
+     */
+    public function saveService(): void {
+        // Uses $_POST for form submission data
+        $id = $_POST['id'] ?? null;
+        $title = trim($_POST['title'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        // Basic validation
+        if (empty($title) || empty($description)) {
+            $_SESSION['error'] = 'Title and Description are required.';
+            
+            // Redirect back to the form, preserving the ID if editing
+            $redirect = BASE_PATH . '/admin/services/add';
+            if ($id) {
+                $redirect = BASE_PATH . '/admin/services/edit?id=' . $id;
+            }
+            header('Location: ' . $redirect);
+            exit;
+        }
+
+        $serviceModel = new ServiceModel();
+        $data = ['title' => $title, 'description' => $description];
+        $success = false;
+        $message = 'Something went wrong.';
+
+        if ($id) {
+            // UPDATE
+            $success = $serviceModel->updateService((int)$id, $data);
+            $message = $success ? 'Service updated successfully!' : 'Failed to update service.';
+        } else {
+            // CREATE
+            $success = $serviceModel->createService($data);
+            $message = $success ? 'Service added successfully!' : 'Failed to add new service.';
+        }
+
+        // Set session message and redirect to the service list
+        $_SESSION['message'] = $message;
+        header('Location: ' . BASE_PATH . '/admin/services');
+        exit;
+    }
+
+    /**
+     * 4. Delete a service (DELETE POST).
+     */
+    public function deleteService(): void {
+        $id = $_POST['id'] ?? null; // Gets ID from hidden input in the form
+
+        if (!$id) {
+            $_SESSION['message'] = 'Error: No service ID provided for deletion.';
+        } else {
+            $serviceModel = new ServiceModel();
+            if ($serviceModel->deleteService((int)$id)) {
+                $_SESSION['message'] = 'Service deleted successfully!';
+            } else {
+                $_SESSION['message'] = 'Error: Failed to delete service.';
+            }
+        }
+
+        header('Location: ' . BASE_PATH . '/admin/services');
+        exit;
     }
 }
