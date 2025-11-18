@@ -1,0 +1,17 @@
+# .htaccess
+# Turn on the Rewrite Engine
+RewriteEngine On
+
+# Base directory for the rewrite module
+# Set this to your subfolder path if necessary (e.g., /cloud27-project/)
+RewriteBase /cloud27-project/
+
+# Check if the request is NOT for a real file
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Check if the request is NOT for a real directory
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route all other requests to index.php
+# The [L] flag makes this the last rule to execute
+RewriteRule ^(.*)$ index.php [L]
