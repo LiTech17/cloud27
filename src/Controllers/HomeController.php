@@ -3,25 +3,28 @@
 
 namespace Controllers;
 
-use Models\ServiceModel; // Import the Model to fetch data
+use Models\ServiceModel;
+use Models\PackageModel; // NEW: Import the Package Model
 
 class HomeController extends BaseController {
 
     /**
-     * Handles the Home Page request, fetching services to potentially display a snippet.
+     * Handles the Home Page request, fetching services and packages.
      */
     public function index(): void {
-        // 1. Instantiate the Service Model
+        // 1. Instantiate Models
         $serviceModel = new ServiceModel();
+        $packageModel = new PackageModel(); // NEW: Instantiate PackageModel
         
-        // 2. Fetch the data (all services)
+        // 2. Fetch the data
         $services = $serviceModel->getAllServices(); 
+        $packages = $packageModel->getAllPackages(); // NEW: Fetch all packages
         
         // 3. Render the home view, passing the dynamic data
         $this->render('home', [
             'title' => 'Welcome to Cloud27',
-            // Pass services data or an empty array if the model failed
-            'services' => $services ?: [] 
+            'services' => $services ?: [], 
+            'packages' => $packages ?: [] // NEW: Pass packages data to the view
         ]);
     }
 
@@ -51,8 +54,6 @@ class HomeController extends BaseController {
 
     /**
      * Placeholder method for the Contact page, handled by ContactController in routing.
-     * Note: This method may not be strictly necessary if routing sends /contact to ContactController.
-     * We keep it here to ensure the class is complete.
      */
     public function contact(): void {
         $this->render('contact', ['title' => 'Contact Us']);

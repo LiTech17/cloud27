@@ -1,3 +1,11 @@
+<?php 
+// Note: This file uses server-side PHP variables ($pageTitle, BASE_PATH, $_SESSION) 
+
+// Prepare PHP variables for the navigation logic
+$isLoggedIn = isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true;
+$isAdmin = $_SESSION['is_admin'] ?? false;
+$dashboardPath = $isAdmin ? BASE_PATH . '/admin/dashboard' : BASE_PATH . '/client/dashboard';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,155 +13,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'Cloud27.co.za | Modern Cloud Solutions' ?></title>
 
+    <!-- Load Custom Global Styles (Mobile First + Dark Mode) -->
+    <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/css/styles.css">
+
     <style>
-        /* CSS Variables */
-        :root {
-            --primary-color: #007bff; /* Blue */
-            --secondary-color: #6c757d; /* Gray */
-            --background-color: #f8f9fa;
-            --text-color: #333;
-            --font-family: 'Arial', sans-serif;
-        }
+        .site-logo {
+    height: 40px;
+    width: auto;
+    display: block;
+}
 
-        /* Base & Reset */
-        body {
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 0;
-            color: var(--text-color);
-            background-color: #fff;
-            line-height: 1.6;
-        }
+@media (min-width: 768px) {
+    .site-logo {
+        height: 48px;
+    }
+}
 
-        /* Layout Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        /* Header & Navigation */
-        header {
-            background: #343a40;
-            color: white;
-            padding: 10px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header h1 a {
-            color: white;
-            text-decoration: none;
-            font-size: 1.5em;
-        }
-        .nav-links {
-            display: flex;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            display: block;
-            transition: background-color 0.2s;
-        }
-        .nav-links a:hover {
-            background-color: #495057;
-        }
-
-        /* Main Content Area */
-        .content {
-            padding: 40px 0;
-            min-height: 70vh; /* Ensures the footer stays down */
-        }
-
-        /* Utility/Button Styling */
-        .btn-primary {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: opacity 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        /* Mobile Specifics (Hidden on Desktop) */
-        .mobile-menu-toggle {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5em;
-            cursor: pointer;
-            display: block; /* Default visible on small screens */
-        }
-        /* Mobile Navigation Overlay/Menu (Hidden by default, shown by JS in Phase 2) */
-        @media (max-width: 767px) {
-            .nav-links {
-                display: none; /* Hidden on mobile until JS toggles */
-                flex-direction: column;
-                position: absolute;
-                top: 60px; /* Below header */
-                left: 0;
-                right: 0;
-                background-color: #343a40;
-                z-index: 1000;
-                padding: 10px 0;
-            }
-            .nav-links.active {
-                display: flex;
-            }
-            .nav-links a {
-                padding: 15px 25px;
-                border-top: 1px solid #495057;
-            }
-        }
-
-        /* Desktop Specifics (Navigation visible) */
-        @media (min-width: 768px) {
-            .nav-links {
-                display: flex !important; /* Always show navigation on desktop */
-            }
-            .mobile-menu-toggle {
-                display: none; /* Hide toggle button on desktop */
-            }
-        }
     </style>
+    
+    <!-- Optional: Keep Tailwind for utility classes if needed -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
 </head>
 <body>
-    <header>
-        <div class="container header-content">
-            <h1><a href="<?= BASE_PATH ?>/">Cloud27</a></h1>
-            <nav>
-                <ul class="nav-links" id="main-nav">
-                    <li><a href="<?= BASE_PATH ?>/about">About</a></li>
-                    <li><a href="<?= BASE_PATH ?>/services">Services</a></li>
-                    <li><a href="<?= BASE_PATH ?>/contact">Contact</a></li>
+    <!-- Navbar Component -->
+    <header class="navbar">
+        <div class="container">
+            <div class="flex items-center justify-between py-4">
+                <!-- Logo -->
+                <a href="<?= BASE_PATH ?>/" class="navbar-brand flex items-center gap-2">
+                    <img src="<?= BASE_PATH ?>/assets/img/logo.png" alt="Cloud27 Logo" class="site-logo">
+                    <span class="text-gradient font-bold text-xl">Cloud27</span>
+                </a>
+
+
+                <!-- Desktop Navigation -->
+                <nav class="navbar-menu">
+                    <a href="<?= BASE_PATH ?>/about" class="navbar-link">About</a>
+                    <a href="<?= BASE_PATH ?>/services" class="navbar-link">Services</a>
+                    <a href="<?= BASE_PATH ?>/contact" class="navbar-link">Contact</a>
                     
-                    <?php 
-                    // Check if the user is logged in
-                    if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true): 
-                    ?>
-                        <li><a href="<?= BASE_PATH ?>/admin/dashboard" 
-                               style="font-weight: bold; color: #28a745;">Dashboard</a></li>
-                        <li><a href="<?= BASE_PATH ?>/logout" style="color: #dc3545;">Logout</a></li>
+                    <?php if ($isLoggedIn): ?>
+                        <a href="<?= $dashboardPath ?>" class="navbar-link active">
+                            Dashboard
+                        </a>
+                        <a href="<?= BASE_PATH ?>/logout" class="btn btn-ghost btn-sm">
+                            Logout
+                        </a>
                     <?php else: ?>
-                        <li><a href="<?= BASE_PATH ?>/login">Login</a></li>
+                        <a href="<?= BASE_PATH ?>/login" class="btn btn-primary btn-sm">
+                            Login
+                        </a>
                     <?php endif; ?>
-                </ul>
-            </nav>
-            <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+                    <!-- Dark Mode Toggle -->
+                    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+                        <svg class="theme-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+                </nav>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="navbar-toggle" id="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                    <div class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu menu-hidden" id="mobile-nav">
+            <div class="mobile-menu-container">
+                <a href="<?= BASE_PATH ?>/about" class="mobile-menu-item">About</a>
+                <a href="<?= BASE_PATH ?>/services" class="mobile-menu-item">Services</a>
+                <a href="<?= BASE_PATH ?>/contact" class="mobile-menu-item">Contact</a>
+
+                <?php if ($isLoggedIn): ?>
+                    <a href="<?= $dashboardPath ?>" class="mobile-menu-item active">
+                        Dashboard
+                    </a>
+                    <a href="<?= BASE_PATH ?>/logout" class="mobile-menu-item text-error">
+                        Logout
+                    </a>
+                <?php else: ?>
+                    <div class="mt-4 pt-4 border-t">
+                        <a href="<?= BASE_PATH ?>/login" class="btn btn-primary w-full">
+                            Login
+                        </a>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Mobile Dark Mode Toggle -->
+                <div class="mt-4 pt-4 border-t flex items-center justify-between">
+                    <span class="text-secondary">Dark Mode</span>
+                    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+                        <svg class="theme-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
+
     <main class="content">
-        <div class="container">
+        <div class="container py-6 md:py-8">
+
+    <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-nav');
+
+            if (toggleButton && mobileMenu) {
+                toggleButton.addEventListener('click', () => {
+                    const isMenuOpen = mobileMenu.classList.contains('menu-open');
+                    
+                    if (isMenuOpen) {
+                        // Close the menu
+                        mobileMenu.classList.remove('menu-open');
+                        mobileMenu.classList.add('menu-hidden');
+                        toggleButton.classList.remove('active');
+                        toggleButton.setAttribute('aria-expanded', 'false');
+                    } else {
+                        // Open the menu
+                        mobileMenu.classList.remove('menu-hidden');
+                        mobileMenu.classList.add('menu-open');
+                        toggleButton.classList.add('active');
+                        toggleButton.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            }
+        });
+
+        // Dark Mode Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            
+            // Save preference to localStorage
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Initialize theme from localStorage or system preference
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (prefersDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>

@@ -2,21 +2,42 @@
 // src/Controllers/ContactController.php
 namespace Controllers; 
 
+use Models\PackageModel; // Import PackageModel
+
 class ContactController extends BaseController {
     
     /**
      * Handles the GET request for the /contact route.
-     * Shows the contact form to the user.
+     * Shows the contact form to the user and handles package pre-selection.
      */
     public function showForm(): void {
         // Use the null coalescing operator (??) to safely check if $_GET['status'] exists.
         $status = $_GET['status'] ?? '';
+        $packageId = $_GET['package_id'] ?? null; // Check for package ID
+        $initialMessage = '';
+
+        // Handle pre-filling the message if a package is selected
+        if ($packageId && is_numeric($packageId)) {
+            $packageModel = new PackageModel();
+            
+            // FIX: Changed 'getById' to the correct method name 'getPackageById'
+            $package = $packageModel->getPackageById((int)$packageId); 
+            
+            if ($package) {
+                // Construct the helpful initial message
+                // Using null coalescing operator for safe access to array keys
+                $title = htmlspecialchars($package['title'] ?? 'Selected Package');
+                $price = number_format($package['price_base'] ?? 0, 2);
+
+                $initialMessage = "I would like to get a quote for the '{$title}' package (Base Price: R{$price}). Please provide details on how to proceed with this plan.";
+            }
+        }
 
         $data = [
             'pageTitle' => 'Contact Us | Start Your Project',
-            // Check the safely retrieved $status variable
             'statusMessage' => $status === 'success' ? 'Your form was submitted successfully (via manual redirect).' : '', 
-            'statusType' => 'alert-success'
+            'statusType' => 'alert-success',
+            'initialMessage' => $initialMessage // Pass the pre-filled message to the view
         ];
         $this->render('contact', $data);
     }
