@@ -3,126 +3,90 @@
 
 namespace Models;
 
-/**
- * Abstract class providing common CRUD functionality for all models.
- * Relies on the global Database Singleton (Database::getInstance()) for connection.
- */
 abstract class BaseModel {
-    // The PDO object is now managed by the Database Singleton, so we don't store it here.
-    protected $table; // Must be set by inheriting classes (e.g., 'pricing_packages')
 
-    /**
-     * BaseModel constructor. No longer connects directly; connection is via Singleton.
-     */
+    /** @var string $table Must be defined by child classes */
+    protected string $table;
+
     public function __construct() {
-        // The connection is now lazy-loaded/managed by \Database::getInstance()
+        // No direct connection here; Database::getInstance() manages PDO
     }
 
-    /**
-     * Disconnects from the database. (Removed manual disconnect as Singleton manages lifetime)
-     */
-    public function __destruct() {
-        // Explicit manual disconnection is no longer necessary as the Singleton holds the resource.
-    }
-
-    // ------------------------------------------------------------------------
-    // CORE QUERY METHODS
-    // ------------------------------------------------------------------------
+    // ------------------------------------------------------------------
+    // INTERNAL QUERY HELPERS
+    // ------------------------------------------------------------------
 
     /**
-     * Executes a raw SQL query and returns the result array. Use for SELECTs.
-     * @param string $sql The SQL query string.
-     * @param array $params Optional array of parameters for prepared statement.
-     * @return array The resulting data set.
+     * Execute SELECT query and return all rows.
      */
     protected function query(string $sql, array $params = []): array {
-        // Use the Singleton's run method to execute the query
         $stmt = \Database::getInstance()->run($sql, $params);
         return $stmt->fetchAll();
     }
 
     /**
-     * Executes an SQL command (INSERT, UPDATE, DELETE).
-     * @param string $sql The SQL command string.
-     * @param array $params Optional array of parameters for prepared statement.
-     * @return bool True if one or more rows were affected (or query succeeded), false otherwise.
+     * Execute INSERT/UPDATE/DELETE and return whether rows were affected.
      */
     protected function execute(string $sql, array $params = []): bool {
-        // Use the Singleton's run method to execute the command
         $stmt = \Database::getInstance()->run($sql, $params);
-        // For CUD operations, return true if rows were affected or the command was a success
         return $stmt->rowCount() > 0;
     }
 
-    // ------------------------------------------------------------------------
-    // COMMON CRUD ABSTRACTIONS
-    // ------------------------------------------------------------------------
+    // ------------------------------------------------------------------
+    // CRUD HELPERS
+    // ------------------------------------------------------------------
 
     /**
-     * Finds a single record by ID.
-     * @param int $id The ID of the record.
-     * @return array|null The record data or null if not found.
+     * Find a record by primary key.
      */
     protected function findOne(int $id): ?array {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
-        // Use the Singleton's run method
+        $sql = "SELECT * FROM {$this->table} WHERE id = :id LIMIT 1";
         $stmt = \Database::getInstance()->run($sql, [':id' => $id]);
-        $result = $stmt->fetch();
-        return $result ?: null;
+        $data = $stmt->fetch();
+        return $data ?: null;
     }
 
     /**
-     * Inserts a new record into the table.
-     * @param array $data Associative array of column names and values.
-     * @return bool True on success.
+     * Insert a record.
      */
     protected function insert(array $data): bool {
         $columns = implode(', ', array_keys($data));
         $placeholders = ':' . implode(', :', array_keys($data));
-        
-        $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
-        
-        // Map data keys to PDO placeholders
+
+        $sql = "INSERT INTO {$this->table} ({$columns})
+                VALUES ({$placeholders})";
+
         $params = [];
-        foreach ($data as $key => $value) {
-            $params[":{$key}"] = $value;
+        foreach ($data as $col => $val) {
+            $params[":{$col}"] = $val;
         }
 
         return $this->execute($sql, $params);
     }
 
     /**
-     * Updates an existing record by ID.
-     * @param int $id The ID of the record to update.
-     * @param array $data Associative array of column names and new values.
-     * @return bool True on success.
+     * Update a record by ID.
      */
     protected function update(int $id, array $data): bool {
-        $setClauses = [];
+        $set = [];
         $params = [':id' => $id];
 
-        foreach ($data as $key => $value) {
-            // Skip the ID field if it somehow got passed in the data
-            if ($key === 'id') continue; 
-            
-            $setClauses[] = "{$key} = :{$key}";
-            $params[":{$key}"] = $value;
-        }
-        
-        if (empty($setClauses)) {
-            return false; // Nothing to update
+        foreach ($data as $col => $val) {
+            if ($col === 'id') continue;
+            $set[] = "{$col} = :{$col}";
+            $params[":{$col}"] = $val;
         }
 
-        $setClause = implode(', ', $setClauses);
+        if (empty($set)) return false;
+
+        $setClause = implode(', ', $set);
         $sql = "UPDATE {$this->table} SET {$setClause} WHERE id = :id";
-        
+
         return $this->execute($sql, $params);
     }
 
     /**
-     * Deletes a record by ID.
-     * @param int $id The ID of the record to delete.
-     * @return bool True on success.
+     * Delete a record by ID.
      */
     protected function delete(int $id): bool {
         $sql = "DELETE FROM {$this->table} WHERE id = :id";

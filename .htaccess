@@ -3,7 +3,6 @@
 RewriteEngine On
 
 # Base directory for the rewrite module
-# Set this to your subfolder path if necessary (e.g., /cloud27-project/)
 RewriteBase /cloud27-project/
 
 # Check if the request is NOT for a real file
@@ -12,6 +11,6 @@ RewriteCond %{REQUEST_FILENAME} !-f
 # Check if the request is NOT for a real directory
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Route all other requests to index.php
-# The [L] flag makes this the last rule to execute
-RewriteRule ^(.*)$ index.php [L]
+# Route all other requests to index.php, passing the full URI path ($1)
+# FIX APPLIED HERE: Added /$1 to ensure the URI path is preserved for the router.
+RewriteRule ^(.*)$ index.php/$1 [L]

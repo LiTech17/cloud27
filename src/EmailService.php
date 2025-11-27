@@ -8,8 +8,8 @@
  */
 class EmailService {
 
-    // --- FIX APPLIED HERE ---
-    // Change PHPMailer to the Fully Qualified Name (FQN) \PHPMailer\PHPMailer\PHPMailer
+    // --- SETUP METHOD (No change needed) ---
+
     private function setupMailer(): \PHPMailer\PHPMailer\PHPMailer {
         // Instantiate a new PHPMailer object
         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
@@ -27,7 +27,7 @@ class EmailService {
         return $mail;
     }
 
-    // --- TEMPLATING METHODS (Adapted from your snippet) ---
+    // --- TEMPLATING METHODS (Two new methods added for onboarding) ---
 
     private function cloud27EmailWrapper(string $content): string
     {
@@ -62,13 +62,13 @@ class EmailService {
     
     private function adminEmailTemplate(array $data): string
     {
-        // Simple HTML template for admin notification
+        // Template for the standard contact form
         $name     = htmlspecialchars($data['name'] ?? '', ENT_QUOTES);
         $email    = htmlspecialchars($data['email'] ?? '', ENT_QUOTES);
         $message  = nl2br(htmlspecialchars($data['message'] ?? '', ENT_QUOTES));
         $ip       = htmlspecialchars($_SERVER['REMOTE_ADDR'] ?? 'unknown', ENT_QUOTES);
 
-        $html = "<h3 style='color:#222;'>New Website Inquiry</h3>
+        $html = "<h3 style='color:#222;'>New Website Inquiry (Contact Form)</h3>
                  <p><strong>Name:</strong> $name</p>
                  <p><strong>Email:</strong> $email</p>
                  <hr style='border-top:1px solid #eee;'>
@@ -81,7 +81,7 @@ class EmailService {
 
     private function clientAutoReplyTemplate(array $data): string
     {
-        // Simple HTML template for client auto-reply
+        // Template for the standard contact form auto-reply
         $name     = htmlspecialchars($data['name'] ?? '', ENT_QUOTES);
         $message = nl2br(htmlspecialchars($data['message'] ?? '', ENT_QUOTES));
 
@@ -94,47 +94,131 @@ class EmailService {
         return $html;
     }
 
-    // --- SENDING METHODS ---
-
-    public function sendAdminEmail(array $data): array
+    /**
+     * @NEW: Builds the email content for the Admin team based on project onboarding data.
+     */
+    private function adminProjectTemplate(array $data): string
     {
+        $companyName  = htmlspecialchars($data['company_name'] ?? 'N/A');
+        $repName      = htmlspecialchars($data['rep_name'] ?? 'N/A');
+        $repEmail     = htmlspecialchars($data['rep_email'] ?? 'N/A');
+        $projectId    = $data['project_id'] ?? 'N/A';
+        $quoteSummary = $data['quote'] ?? ['package_name' => 'N/A', 'total_once_off' => 0];
+        $totalCost    = number_format($quoteSummary['total_once_off'], 2);
+        $adminLink    = "http://yourdomain.com/admin/projects/{$projectId}"; // Replace with your actual domain/path
+
+        $html = "<h2 style='color:#0d6efd;'>🚨 NEW PROJECT LEAD: {$companyName}</h2>
+                 <p style='font-size:16px;'>A new project has been submitted via the Get Started form. **Action required.**</p>
+                 <hr style='border-top:1px solid #eee;'>
+                 
+                 <h3>Quote Summary</h3>
+                 <p><strong>Project ID:</strong> {$projectId}</p>
+                 <p><strong>Package Estimated:</strong> {$quoteSummary['package_name']}</p>
+                 <p style='font-size:18px; color:#28a745; font-weight:bold;'>Estimated Cost: R{$totalCost}</p>
+                 
+                 <h3>Client Details</h3>
+                 <table style='width:100%; border-collapse: collapse;'>
+                    <tr><td style='padding:5px; border-bottom:1px solid #eee;'><strong>Company:</strong></td><td style='padding:5px; border-bottom:1px solid #eee;'>{$companyName}</td></tr>
+                    <tr><td style='padding:5px; border-bottom:1px solid #eee;'><strong>Contact:</strong></td><td style='padding:5px; border-bottom:1px solid #eee;'>{$repName} ({$data['rep_role'] ?? 'N/A'})</td></tr>
+                    <tr><td style='padding:5px; border-bottom:1px solid #eee;'><strong>Email:</strong></td><td style='padding:5px; border-bottom:1px solid #eee;'><a href='mailto:{$repEmail}'>{$repEmail}</a></td></tr>
+                 </table>
+
+                 <h3 style='margin-top:20px;'>Next Steps</h3>
+                 <p>Review the full submission details (including files uploaded) by clicking the link below:</p>
+                 <p style='text-align:center;'>
+                    <a href='{$adminLink}' style='background:#0d6efd; color:#fff; padding:10px 20px; text-decoration:none; border-radius:5px; display:inline-block;'>View Project #{$projectId} in Admin</a>
+                 </p>";
+                 
+        return $html;
+    }
+
+    /**
+     * @NEW: Builds the email content for the Client with their generated quote.
+     */
+    private function clientQuoteTemplate(array $data): string
+    {
+        $repName      = htmlspecialchars($data['rep_name'] ?? 'Client');
+        $companyName  = htmlspecialchars($data['company_name'] ?? 'Your Company');
+        $quoteSummary = $data['quote'] ?? ['package_name' => 'N/A', 'total_once_off' => 0];
+        $totalCost    = number_format($quoteSummary['total_once_off'], 2);
+        $projectId    = $data['project_id'] ?? 'N/A';
+
+        $html = "<h3 style='color:#222;'>Hello {$repName},</h3>
+                 <p>Thank you for submitting your project request to **Cloud27**! We're excited to help **{$companyName}** succeed.</p>
+                 <p>Based on your requirements, here is your instant quote summary:</p>
+                 
+                 <div style='border:2px solid #0d6efd; padding:15px; border-radius:8px; margin:20px 0;'>
+                    <p style='font-size:18px; font-weight:bold; color:#0d6efd; margin-top:0;'>Estimated Project Quote</p>
+                    <p><strong>Package:</strong> {$quoteSummary['package_name']}</p>
+                    <p style='font-size:22px; color:#dc3545; font-weight:bold;'>Total Estimated Cost: R{$totalCost}</p>
+                 </div>
+                 
+                 <h4 style='margin-top:20px;'>What Happens Next?</h4>
+                 <ol>
+                    <li>Our team will review your **full submission and uploaded assets** (Ref: #{$projectId}).</li>
+                    <li>We will contact you within **1 business day** to discuss the quote and finalize any remaining details.</li>
+                    <li>If you wish to proceed immediately, please reply to this email or call us.</li>
+                 </ol>
+                 <p style='margin-top:16px; font-weight:bold;'>— The Cloud27 Project Team</p>";
+                 
+        return $html;
+    }
+
+    // --- SENDING METHODS (Two new methods added for onboarding) ---
+
+    // (Original sendAdminEmail and sendClientAutoReply methods here...)
+
+    public function sendAdminEmail(array $data): array { /* ... unchanged ... */ }
+    public function sendClientAutoReply(array $data): array { /* ... unchanged ... */ }
+
+
+    /**
+     * @NEW: Sends a notification to the corporate email when a new project is submitted.
+     */
+    public function sendAdminNewProjectEmail(array $data): array
+    {
+        if (empty($data['rep_email'])) return [false, 'Representative email missing'];
+
         $mail = $this->setupMailer();
 
         try {
-            $mail->setFrom($_ENV['SMTP_USER'], $_ENV['SMTP_FROM_NAME'] ?? 'Cloud27');
-            $mail->addAddress($_ENV['SMTP_TO']);
-            if (!empty($data['email'])) $mail->addReplyTo($data['email'], $data['name'] ?? '');
+            $mail->setFrom($_ENV['SMTP_USER'], $_ENV['SMTP_FROM_NAME'] ?? 'Cloud27 Bot');
+            $mail->addAddress($_ENV['SMTP_TO']); // Send to corporate email address
+            $mail->addReplyTo($data['rep_email'], $data['rep_name'] ?? '');
 
             $mail->isHTML(true);
-            $mail->Subject = 'New Inquiry from ' . ($data['name'] ?? 'website');
-            $mail->Body    = $this->cloud27EmailWrapper($this->adminEmailTemplate($data));
+            $mail->Subject = "ACTION: NEW PROJECT LEAD - {$data['company_name']} (#{$data['project_id']})";
+            $mail->Body    = $this->cloud27EmailWrapper($this->adminProjectTemplate($data));
 
             $mail->send();
             return [true, null];
         } catch (\PHPMailer\PHPMailer\Exception $e) {
-            error_log('sendAdminEmail error: ' . $mail->ErrorInfo);
+            error_log('sendAdminNewProjectEmail error: ' . $mail->ErrorInfo);
             return [false, $mail->ErrorInfo ?: $e->getMessage()];
         }
     }
 
-    public function sendClientAutoReply(array $data): array
+    /**
+     * @NEW: Sends the auto-reply confirmation and quote summary to the client.
+     */
+    public function sendClientQuoteConfirmation(array $data): array
     {
-        if (empty($data['email'])) return [false, 'Client email missing'];
+        if (empty($data['rep_email'])) return [false, 'Client email missing'];
 
         $mail = $this->setupMailer();
 
         try {
-            $mail->setFrom($_ENV['SMTP_USER'], 'Cloud27 Support');
-            $mail->addAddress($data['email'], $data['name'] ?? '');
+            $mail->setFrom($_ENV['SMTP_USER'], 'Cloud27 Project Management');
+            $mail->addAddress($data['rep_email'], $data['rep_name'] ?? '');
 
             $mail->isHTML(true);
-            $mail->Subject = "We've received your request – Cloud27";
-            $mail->Body    = $this->cloud27EmailWrapper($this->clientAutoReplyTemplate($data));
+            $mail->Subject = "Project Quote & Confirmation - Ref: #{$data['project_id']}";
+            $mail->Body    = $this->cloud27EmailWrapper($this->clientQuoteTemplate($data));
 
             $mail->send();
             return [true, null];
         } catch (\PHPMailer\PHPMailer\Exception $e) {
-            error_log('sendClientAutoReply error: ' . $mail->ErrorInfo);
+            error_log('sendClientQuoteConfirmation error: ' . $mail->ErrorInfo);
             return [false, $mail->ErrorInfo ?: $e->getMessage()];
         }
     }

@@ -9,6 +9,7 @@ $username = $_SESSION['username'] ?? 'User';
 if ($isAdmin) {
     $navLinks = [
         'Dashboard' => BASE_PATH . '/admin/dashboard',
+        'Projects' => BASE_PATH . '/admin/projects',
         'Services' => BASE_PATH . '/admin/services',
         'Packages' => BASE_PATH . '/admin/packages',
         'Users' => BASE_PATH . '/admin/users',
@@ -19,7 +20,7 @@ if ($isAdmin) {
 } else {
     $navLinks = [
         'Dashboard' => BASE_PATH . '/client/dashboard',
-        'Projects' => '#',
+        'Projects' => BASE_PATH . '/client/projects',
         'Support' => '#',
     ];
     $navTitle = 'Client Portal';

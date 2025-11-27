@@ -1,3 +1,5 @@
+/* assets/css/styles.css */
+
 /* ========================================================================
    ENHANCED GLOBAL STYLES - Mobile First, Dark Mode, Fully Responsive
    ======================================================================== */
@@ -1550,14 +1552,3 @@ body {
   animation: slideUp var(--transition-slow);
 }
 
-.site-logo {
-    height: 40px;
-    width: auto;
-    display: block;
-}
-
-@media (min-width: 768px) {
-    .site-logo {
-        height: 48px;
-    }
-}

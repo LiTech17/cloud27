@@ -25,7 +25,7 @@ class Upload {
         'image/webp',
         'image/gif',
         'image/x-icon',
-        'image/vnd.microsoft.icon'
+        'application/pdf'
     ];
     
     /**

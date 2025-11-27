@@ -1,0 +1,115 @@
+/*
+ * public/css/onboarding.css
+ * Styling for the multi-step onboarding form.
+ * NOTE: Assumes Tailwind CSS utilities (like flex, mb-6, w-full, etc.) are available.
+ */
+
+/* Grid Layout */
+.onboarding-wrapper {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+}
+
+/* Sidebar Styling */
+.step-sidebar {
+    position: sticky;
+    top: 100px; /* Adjust based on fixed header height */
+    background: var(--color-surface);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    height: fit-content;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    z-index: 50; /* Ensure sidebar is above content but below overlays */
+}
+
+/* Step Item Styling */
+.step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast, 0.2s);
+}
+
+.step-item:hover:not(.active) {
+    background: var(--color-surface-hover);
+    transform: translateX(2px);
+    color: var(--color-text);
+}
+
+.step-item.active {
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+}
+
+/* Completed Step Styling */
+.step-item.completed .step-icon {
+    /* Styles for the checkmark icon when a step is completed */
+    color: var(--color-success);
+}
+
+/* Step Content Transitions (Main Area) */
+.step-content {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.step-content.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Sticky Footer Navigation */
+.form-navigation-footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--color-surface);
+    padding: 1rem 0;
+    border-top: 1px solid var(--color-border);
+    z-index: 40;
+}
+
+/* Checkbox/Radio Group Styling (for card/label selection) */
+.form-checkbox-label {
+    /* Assuming this class is applied to a <label> wrapping an input */
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast, 0.2s);
+}
+
+.form-checkbox-label:hover {
+    border-color: var(--color-primary);
+}
+
+.form-checkbox-label:has(input:checked) {
+    border-color: var(--color-primary);
+    /* Fallback and dynamic color for checked state background */
+    background: color-mix(in srgb, var(--color-primary, #007bff) 5%, transparent);
+}
+
+/* Progress Bar Colors (Assuming progress bar is styled by Tailwind or a framework) */
+#progress-bar {
+    background: var(--color-primary);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .onboarding-wrapper {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .step-sidebar {
+        position: relative;
+        top: 0;
+    }
+}

@@ -142,7 +142,7 @@ $packages = $data['packages'] ?? [];
             <p class="text-lg mb-6" style="color: rgba(255, 255, 255, 0.9);">
                 Let's discuss how we can help you achieve your business goals with cutting-edge web solutions.
             </p>
-            <a href="<?= BASE_PATH ?>/contact" class="btn btn-secondary btn-lg">
+            <a href="<?= BASE_PATH ?>/get-started" class="btn btn-secondary btn-lg">
                 Get Started Today
             </a>
         </div>
