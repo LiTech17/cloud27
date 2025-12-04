@@ -15,6 +15,7 @@ $routes = [
         '/contact'          => ['Controllers\ContactController', 'showForm', ''],
         '/packages'         => ['Controllers\AdminPackageController', 'showPackages', ''],
         '/get-started'      => ['Controllers\GetStartedController', 'index', ''],
+        '/profile'          => ['Controllers\ClientController', 'profile', 'Auth'],
 
         // --- Authentication ---
         '/login'            => ['Controllers\AdminController', 'showLogin', ''],
@@ -30,6 +31,7 @@ $routes = [
         '/admin/projects/create'        => ['Controllers\AdminProjectController', 'create', 'Auth'],
         '/admin/projects/edit/{id}'     => ['Controllers\AdminProjectController', 'edit', 'Auth'],
         '/admin/projects/{id}'          => ['Controllers\AdminProjectController', 'show', 'Auth'],
+        '/admin/projects/{id}/create-profile' => ['Controllers\AdminProjectController', 'createProfile', 'Auth'],
 
         // ---------------------- PROJECT DATA MANAGEMENT (ADMIN) ---------------
         '/admin/projects/data/{projectId}' => ['Controllers\ProjectDataController', 'adminView', 'Auth'],
@@ -98,6 +100,7 @@ $routes = [
         // --- Get-Started Form Submission ---
         // 🚨 FIX: Updated route name to match client-side JS URL (onboarding-submit)
         '/onboarding-submit'            => ['Controllers\GetStartedController', 'submit', ''],
+        '/calculate-quote'              => ['Controllers\GetStartedController', 'calculate', ''],
 
         // --- Authentication ---
         '/login'                        => ['Controllers\AdminController', 'processLogin', ''],
@@ -112,6 +115,14 @@ $routes = [
         // ====================================================================
         '/client/project-data/store/{projectId}'   => ['Controllers\ProjectDataController', 'store', 'Auth'],
         '/client/project-data/update/{projectId}'  => ['Controllers\ProjectDataController', 'update', 'Auth'],
+        '/client/profile/update-password'          => ['Controllers\ClientController', 'updatePassword', 'Auth'],
+
+        // ---------------------- CAROUSEL MANAGEMENT (ADMIN POST) --------------
+        '/admin/carousel/upload'        => ['Controllers\AdminCarouselController', 'upload', 'Auth'],
+        '/admin/carousel/update/{id}'   => ['Controllers\AdminCarouselController', 'update', 'Auth'],
+        '/admin/carousel/delete/{id}'   => ['Controllers\AdminCarouselController', 'delete', 'Auth'],
+        '/admin/carousel/reorder'       => ['Controllers\AdminCarouselController', 'reorder', 'Auth'],
+        '/admin/carousel/toggle/{id}'   => ['Controllers\AdminCarouselController', 'toggle', 'Auth'],
 
         // ---------------------- PROJECT MANAGEMENT (ADMIN POST) ---------------
         '/admin/projects/store'         => ['Controllers\AdminProjectController', 'store', 'Auth'],

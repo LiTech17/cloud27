@@ -84,6 +84,19 @@ class Database {
         return $stmt;
     }
 
+    // 6. Transaction Methods
+    public function beginTransaction(): bool {
+        return $this->pdo->beginTransaction();
+    }
+
+    public function commit(): bool {
+        return $this->pdo->commit();
+    }
+
+    public function rollBack(): bool {
+        return $this->pdo->rollBack();
+    }
+
     // Prevent external cloning of the instance
     private function __clone() {}
     

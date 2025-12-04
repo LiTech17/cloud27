@@ -12,6 +12,7 @@ class AdminProjectController extends BaseController
     // Model properties for efficiency (initialized in constructor)
     private ProjectModel $projectModel;
     private UserModel $userModel;
+    private \Models\OnboardingDetailsModel $onboardingDetailsModel;
 
     public function __construct()
     {
@@ -20,15 +21,7 @@ class AdminProjectController extends BaseController
         // parent::__construct(); 
         $this->projectModel = new ProjectModel();
         $this->userModel = new UserModel();
-    }
-
-    // Helper to send JSON responses
-    private function jsonResponse(int $code, array $data): void
-    {
-        http_response_code($code);
-        header('Content-Type: application/json');
-        echo json_encode($data);
-        exit;
+        $this->onboardingDetailsModel = new \Models\OnboardingDetailsModel();
     }
 
     // ------------------------------------------------------------------------
@@ -160,11 +153,15 @@ class AdminProjectController extends BaseController
         // Load client info - FIXED: Changed findOne() to getUserById()
         $client = $this->userModel->getUserById($project['client_id']);
 
+        // Load onboarding details
+        $onboardingDetails = $this->onboardingDetailsModel->findBy('project_id', $id);
+
         // Render the view
         $this->render('admin/projects/show', [
             'title' => 'Project Details',
             'project' => $project,
-            'client'  => $client
+            'client'  => $client,
+            'onboardingDetails' => $onboardingDetails
         ]);
     }
 
@@ -283,6 +280,62 @@ class AdminProjectController extends BaseController
         $this->projectModel->deleteProject($id);
         $_SESSION['message'] = 'Project deleted successfully!';
         header('Location: ' . self::BASE_PATH . '/admin/projects');
+        exit;
+    }
+
+    /**
+     * Create/Pre-fill Business Profile from Onboarding Data
+     */
+    public function createProfile(int $projectId): void
+    {
+        if (!$this->isAdmin()) {
+            http_response_code(403);
+            $this->render('403');
+            return;
+        }
+
+        // 1. Get Project & Onboarding Details
+        $project = $this->projectModel->getProjectById($projectId);
+        $details = $this->onboardingDetailsModel->findBy('project_id', $projectId);
+
+        if (!$project) {
+            $_SESSION['error'] = 'Project not found.';
+            header('Location: ' . self::BASE_PATH . '/admin/projects');
+            exit;
+        }
+
+        // 2. Check if Project Data already exists
+        // We need to instantiate ProjectDataModel here.
+        // If it doesn't exist yet, we'll need to create the class.
+        // Assuming it exists or will exist:
+        $projectDataModel = new \Models\ProjectDataModel();
+        $existingData = $projectDataModel->getByProjectId($projectId);
+
+        if ($existingData) {
+            $_SESSION['message'] = 'Business Profile already exists. Redirecting to edit.';
+            header('Location: ' . self::BASE_PATH . '/admin/projects/data/' . $projectId);
+            exit;
+        }
+
+        // 3. Auto-create the record in DB as a draft and then redirect to edit.
+        $newData = [
+            'project_id' => $projectId,
+            'client_id' => $project['client_id'],
+            'business_name' => $details['company_name'] ?? 'New Business',
+            'industry' => $details['industry'] ?? null,
+            'about_business' => $details['mission_statement'] ?? null,
+            'target_audience' => $details['usp'] ?? null,
+            'contact_email' => $details['rep_email'] ?? null,
+            'contact_phone' => $details['rep_phone'] ?? null,
+            'brand_colors' => $details['brand_colors'] ?? null,
+            'is_draft' => 1 // Mark as draft
+        ];
+        
+        // Save the new draft
+        $projectDataModel->save($projectId, $newData);
+        
+        $_SESSION['message'] = 'Business Profile draft created from Onboarding Data. You can now edit it.';
+        header('Location: ' . self::BASE_PATH . '/admin/projects/data/' . $projectId);
         exit;
     }
 

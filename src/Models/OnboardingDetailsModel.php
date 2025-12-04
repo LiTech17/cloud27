@@ -18,6 +18,9 @@ class OnboardingDetailsModel extends BaseModel
     private array $allowedFields = [
         'project_id',
         'client_id',
+        'project_title',
+        'package_name',
+        'budget_estimate',
         'company_name',
         'products_services',
         'mission_statement',
@@ -36,7 +39,10 @@ class OnboardingDetailsModel extends BaseModel
         'pages',      // JSON
         'features',   // JSON
         'tech_req',
-        'additional_notes'
+        'additional_notes',
+        'logo_path',
+        'assets_paths',
+        'quote_json'
     ];
 
     /**

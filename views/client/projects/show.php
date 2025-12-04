@@ -89,14 +89,14 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
                     <div class="space-y-6">
                         <!-- Description -->
                         <div>
-                            <h4 class="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <h4 class="font-semibold text-primary mb-2 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Description
                             </h4>
-                            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            <p class="text-secondary leading-relaxed">
                                 <?= nl2br(htmlspecialchars($project['description'] ?: 'No description provided.')) ?>
                             </p>
                         </div>
@@ -104,16 +104,16 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Package -->
                             <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Package</h4>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-400">
+                                <h4 class="font-semibold text-primary mb-2">Package</h4>
+                                <span class="badge badge-primary">
                                     <?= htmlspecialchars($project['package_name']) ?>
                                 </span>
                             </div>
 
                             <!-- Budget -->
                             <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Budget</h4>
-                                <p class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                <h4 class="font-semibold text-primary mb-2">Budget</h4>
+                                <p class="text-2xl font-bold text-success">
                                     R<?= number_format($project['budget'], 2) ?>
                                 </p>
                             </div>
@@ -129,13 +129,13 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Start Date -->
                             <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Start Date</h4>
+                                <h4 class="font-semibold text-primary mb-2">Start Date</h4>
                                 <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <span class="text-gray-600 dark:text-gray-300">
+                                    <span class="text-secondary">
                                         <?= $startDate ? $startDate->format('F j, Y') : 'Not set' ?>
                                     </span>
                                 </div>
@@ -143,17 +143,17 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
 
                             <!-- Due Date -->
                             <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Due Date</h4>
+                                <h4 class="font-semibold text-primary mb-2">Due Date</h4>
                                 <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 <?= $isOverdue ? 'text-red-500' : ($isUrgent ? 'text-amber-500' : 'text-green-500') ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 <?= $isOverdue ? 'text-error' : ($isUrgent ? 'text-accent' : 'text-success') ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span class="<?= $isOverdue ? 'text-red-600 dark:text-red-400 font-semibold' : ($isUrgent ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-gray-600 dark:text-gray-300') ?>">
+                                    <span class="<?= $isOverdue ? 'text-error font-semibold' : ($isUrgent ? 'text-accent font-semibold' : 'text-secondary') ?>">
                                         <?= $dueDate ? $dueDate->format('F j, Y') : 'Not set' ?>
                                     </span>
                                     <?php if ($dueDate): ?>
-                                        <span class="text-xs <?= $isOverdue ? 'text-red-500' : ($isUrgent ? 'text-amber-500' : 'text-green-500') ?> font-medium">
+                                        <span class="text-xs <?= $isOverdue ? 'text-error' : ($isUrgent ? 'text-accent' : 'text-success') ?> font-medium">
                                             <?= $isOverdue ? 'Overdue by ' . $daysLeft . ' days' : ($isUrgent ? $daysLeft . ' days left' : 'On track') ?>
                                         </span>
                                     <?php endif; ?>
@@ -164,8 +164,8 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Created At -->
                             <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Created</h4>
-                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                <h4 class="font-semibold text-primary mb-2">Created</h4>
+                                <div class="flex items-center gap-2 text-secondary">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -176,8 +176,8 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
 
                             <!-- Last Updated -->
                             <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Last Updated</h4>
-                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                <h4 class="font-semibold text-primary mb-2">Last Updated</h4>
+                                <div class="flex items-center gap-2 text-secondary">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -188,6 +188,60 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
                         </div>
                     </div>
                 </div>
+
+                <!-- Onboarding Details Section -->
+                <?php if (!empty($onboardingDetails)): $details = $onboardingDetails; ?>
+                <div class="card">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="heading-4">Project Requirements</h3>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold text-gray-500 mb-2 uppercase text-xs tracking-wide">Business Profile</h4>
+                            <p class="mb-2"><strong>Company:</strong> <?= htmlspecialchars($details['company_name'] ?? '-') ?></p>
+                            <p class="mb-2"><strong>Industry:</strong> <?= htmlspecialchars($details['industry'] ?? '-') ?></p>
+                            <p class="mb-2"><strong>Mission:</strong> <?= htmlspecialchars($details['mission_statement'] ?? '-') ?></p>
+                            <p class="mb-2"><strong>USP:</strong> <?= htmlspecialchars($details['usp'] ?? '-') ?></p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-500 mb-2 uppercase text-xs tracking-wide">Contact & Brand</h4>
+                            <p class="mb-2"><strong>Rep:</strong> <?= htmlspecialchars($details['rep_name'] ?? '-') ?> (<?= htmlspecialchars($details['rep_role'] ?? '-') ?>)</p>
+                            <p class="mb-2"><strong>Contact:</strong> <?= htmlspecialchars($details['rep_email'] ?? '-') ?> / <?= htmlspecialchars($details['rep_phone'] ?? '-') ?></p>
+                            <p class="mb-2"><strong>Colors:</strong> <?= htmlspecialchars($details['brand_colors'] ?? '-') ?></p>
+                            
+                            <?php if (!empty($details['logo_path'])): ?>
+                                <div class="mt-2">
+                                    <strong>Uploaded Logo:</strong><br>
+                                    <a href="<?= BASE_PATH ?>/uploads/logos/<?= htmlspecialchars($details['logo_path']) ?>" target="_blank" class="text-blue-600 hover:underline text-sm">View Logo</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                        <h4 class="font-bold text-gray-500 mb-2 uppercase text-xs tracking-wide">Specifics</h4>
+                        <p class="mb-2"><strong>Objectives:</strong> 
+                            <?php 
+                                $objs = json_decode($details['objectives'] ?? '[]', true);
+                                echo !empty($objs) ? htmlspecialchars(implode(', ', array_map(fn($s) => ucwords(str_replace('_', ' ', $s)), $objs))) : '-';
+                            ?>
+                        </p>
+                        <p class="mb-2"><strong>Pages:</strong> 
+                            <?php 
+                                $pages = json_decode($details['pages'] ?? '[]', true);
+                                echo !empty($pages) ? htmlspecialchars(implode(', ', array_map(fn($s) => ucwords(str_replace('_', ' ', $s)), $pages))) : '-';
+                            ?>
+                        </p>
+                        <p class="mb-2"><strong>Features:</strong> 
+                            <?php 
+                                $feats = json_decode($details['features'] ?? '[]', true);
+                                echo !empty($feats) ? htmlspecialchars(implode(', ', array_map(fn($s) => ucwords(str_replace('_', ' ', $s)), $feats))) : '-';
+                            ?>
+                        </p>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- Sidebar Column -->
@@ -205,7 +259,7 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
                         <span class="badge <?= getStatusClass($project['status']) ?> text-lg px-4 py-2">
                             <?= htmlspecialchars($project['status']) ?>
                         </span>
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-3">
+                        <p class="text-sm text-secondary mt-3">
                             <?php
                             $statusMessages = [
                                 'New' => 'Your project is awaiting review by our team.',
@@ -222,121 +276,14 @@ $isUrgent = $daysLeft && $daysLeft <= 7 && !$isOverdue;
                     </div>
                 </div>
 
-                <!-- Actions Card -->
-                <div class="card">
-                    <h3 class="heading-4 mb-4">Project Actions</h3>
-                    <div class="space-y-3">
-                        <?php if (empty($project['completed'])): ?>
-                            <a href="<?= BASE_PATH ?>/client/project-data/create/<?= urlencode($project['id']); ?>" 
-                               class="btn btn-primary w-full justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Complete Project Details
-                            </a>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-                                Provide detailed information to help us understand your requirements.
-                            </p>
-                        <?php else: ?>
-                            <a href="<?= BASE_PATH ?>/client/project-data/<?= urlencode($project['id']); ?>" 
-                               class="btn btn-outline w-full justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                View Project Data
-                            </a>
-                        <?php endif; ?>
 
-                        <?php if (in_array($project['status'], ['New', 'Awaiting Client'])): ?>
-                            <a href="<?= BASE_PATH ?>/client/projects/edit/<?= $project['id'] ?>" 
-                               class="btn btn-ghost w-full justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Edit Project
-                            </a>
-                        <?php endif; ?>
 
-                        <a href="<?= BASE_PATH ?>/client/projects" 
-                           class="btn btn-ghost w-full justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Back to Projects
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Support Card -->
-                <div class="card bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-                    <h3 class="heading-4 mb-3">Need Help?</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Have questions about your project? Our support team is here to help.
-                    </p>
-                    <a href="#" class="btn btn-outline w-full justify-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        Contact Support
-                    </a>
-                </div>
+                
             </div>
         </div>
     </div>
 </section>
 
-<style>
-.heading-4 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--color-text);
-}
 
-.card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-}
-
-.card-hover {
-    transition: all 0.3s ease;
-}
-
-.card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Responsive improvements */
-@media (max-width: 768px) {
-    .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    .grid {
-        gap: 1rem;
-    }
-    
-    .card {
-        padding: 1rem;
-    }
-}
-
-/* Dark mode enhancements */
-.dark .card {
-    background: var(--color-surface);
-    border-color: var(--color-border);
-}
-</style>
 
 <?php require VIEW_PATH . '_partials/Footer.php'; ?>

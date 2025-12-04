@@ -1,0 +1,4 @@
+# Deny PHP execution in uploads directory
+<Files *.php>
+    deny from all
+</Files>

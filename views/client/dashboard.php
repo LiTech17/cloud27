@@ -2,170 +2,179 @@
 // views/client/dashboard.php
 
 /**
- * @var array $data Contains data passed from the controller, including 'title'
+ * @var array $data Contains 'projects' and 'stats' passed from the controller
  */
 
-// Include AdminNav to display the protected navigation strip (Client links)
 include VIEW_PATH . '_partials/AdminNav.php'; 
 
-// --- Dummy Data for Demonstration ---
-// In a real application, this data would come from the controller
 $username = $_SESSION['username'] ?? 'Client';
-$stats = [
-    'active_projects' => 2,
-    'open_tickets' => 1,
-    'completed_projects' => 5,
+$projects = $data['projects'] ?? [];
+$stats = $data['stats'] ?? [
+    'total' => 0,
+    'new' => 0,
+    'in_progress' => 0,
+    'completed' => 0
 ];
-// ------------------------------------
+
+// Helper for status colors
+function getStatusBadgeClass($status) {
+    return match($status) {
+        'New' => 'badge-info',
+        'In Progress' => 'badge-primary',
+        'Completed' => 'badge-success',
+        'On Hold' => 'badge-warning',
+        default => 'badge-ghost'
+    };
+}
 ?>
 
 <style>
-    /* Client Dashboard Specific Styles for visibility */
-    .client-dashboard {
-        padding-top: 20px;
-    }
-    .welcome-section {
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #ddd;
-    }
-    .role-info {
-        font-weight: bold;
-        color: #28a745; /* Green for Client */
-    }
-    /* Updated grid for more comprehensive layout: 4 columns */
+    .client-dashboard { padding-top: 20px; }
+    .welcome-section { margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
+    .role-info { font-weight: bold; color: #28a745; }
+    
     .client-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 20px;
+        margin-bottom: 40px;
     }
-    .admin-card { /* Reusing Admin card style structure */
+    
+    .stat-card {
+        background: white;
         padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        display: flex; /* Flex container for content */
-        flex-direction: column;
-        justify-content: space-between; /* Push button to the bottom */
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+        transition: transform 0.2s;
     }
-    .admin-card.primary {
-        background-color: #e9f7ef; /* Light green/success background */
-        border-left: 5px solid #28a745;
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-card h3 { margin: 0 0 10px 0; font-size: 1rem; color: #666; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; color: #333; }
+    
+    .projects-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+        border: 1px solid #eee;
     }
-    .admin-card.secondary {
-        background-color: #f8f9fa; 
-        border-left: 5px solid #6c757d; /* Grey border */
-    }
-    .admin-card.danger {
-        background-color: #fcebeb; /* Light red background */
-        border-left: 5px solid #dc3545; /* Red border */
-    }
-    .admin-card.info {
-        background-color: #e2f4ff; /* Light blue background */
-        border-left: 5px solid #007bff; /* Blue border */
-    }
-    .btn-action-card {
-        margin-top: 15px;
-        display: inline-block;
-        padding: 8px 15px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background-color 0.2s;
-        text-align: center;
-    }
-    .btn-action-card.disabled {
-        opacity: 0.6;
-        cursor: default;
-    }
-    .btn-primary-card {
-        background-color: #28a745;
-        color: white;
-    }
-    .btn-secondary-card {
-        background-color: #6c757d;
-        color: white;
-    }
-    .btn-danger-card {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    /* Stats Card Specific Styles */
-    .stats-card h3 {
-        margin-bottom: 15px;
-        color: #007bff;
-    }
-    .stat-item {
+    .projects-header {
+        padding: 20px;
+        border-bottom: 1px solid #eee;
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px dashed #ced4da;
+        align-items: center;
     }
-    .stat-item:last-child {
-        border-bottom: none;
+    .projects-header h2 { margin: 0; font-size: 1.25rem; }
+    
+    .project-list { list-style: none; padding: 0; margin: 0; }
+    .project-item {
+        padding: 20px;
+        border-bottom: 1px solid #f5f5f5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.1s;
     }
-    .stat-label {
-        font-weight: 500;
-        color: #495057;
+    .project-item:last-child { border-bottom: none; }
+    .project-item:hover { background: #f9f9f9; }
+    
+    .project-info h4 { margin: 0 0 5px 0; font-size: 1.1rem; }
+    .project-meta { font-size: 0.9rem; color: #666; }
+    
+    .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
     }
-    .stat-value {
-        font-weight: bold;
-        font-size: 1.1em;
+    .badge-info { background: #e3f2fd; color: #0d47a1; }
+    .badge-primary { background: #e8f5e9; color: #1b5e20; }
+    .badge-success { background: #e8f5e9; color: #1b5e20; }
+    .badge-warning { background: #fff3e0; color: #e65100; }
+    .badge-ghost { background: #f5f5f5; color: #616161; }
+    
+    .btn-view {
+        padding: 8px 16px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
     }
-    .stat-value.danger {
-        color: #dc3545;
-    }
-    .stat-value.primary {
-        color: #28a745;
+    .btn-view:hover { background: #f5f5f5; border-color: #ccc; }
+
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: #666;
     }
 </style>
-
 
 <div class="container client-dashboard">
     <div class="welcome-section">
         <h2>👋 Welcome, <?= htmlspecialchars($username) ?>!</h2>
-        <p class="role-info">You are logged in to the **Client Portal**.</p>
-        <p>This is your restricted area. Here you can view your active projects, access support, and manage your invoices.</p>
+        <p class="role-info">Client Portal</p>
     </div>
 
-    <hr>
-    
+    <!-- Stats Grid -->
     <div class="client-grid">
-        <div class="admin-card info stats-card">
-            <h3>Quick Overview 📊</h3>
-            <div>
-                <div class="stat-item">
-                    <span class="stat-label">Active Projects</span>
-                    <span class="stat-value primary"><?= htmlspecialchars($stats['active_projects']) ?></span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Open Support Tickets</span>
-                    <span class="stat-value danger"><?= htmlspecialchars($stats['open_tickets']) ?></span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Completed Projects</span>
-                    <span class="stat-value"><?= htmlspecialchars($stats['completed_projects']) ?></span>
-                </div>
-            </div>
-            <a href="#" class="btn-action-card btn-secondary-card disabled">View Reports (Soon)</a>
+        <div class="stat-card">
+            <h3>Active Projects</h3>
+            <div class="value"><?= $stats['total'] - $stats['completed'] ?></div>
         </div>
-        
-        <div class="admin-card primary">
-            <h3>My Projects 📁</h3>
-            <p>View the status, scope, and documents for all your ongoing Cloud27 projects.</p>
-            <a href="#" class="btn-action-card btn-primary-card disabled">View Projects (Coming Soon)</a>
+        <div class="stat-card">
+            <h3>In Progress</h3>
+            <div class="value"><?= $stats['in_progress'] ?></div>
         </div>
-        
-        <div class="admin-card secondary">
-            <h3>Invoices & Billing 💳</h3>
-            <p>Review and download past and current invoices and manage your billing details.</p>
-            <a href="#" class="btn-action-card btn-secondary-card disabled">Manage Billing (Coming Soon)</a>
+        <div class="stat-card">
+            <h3>Completed</h3>
+            <div class="value"><?= $stats['completed'] ?></div>
         </div>
+    </div>
 
-        <div class="admin-card danger">
-            <h3>Support & Tickets 💬</h3>
-            <p>Need help? Submit a new support request or check the status of existing tickets.</p>
-            <a href="#" class="btn-action-card btn-danger-card disabled">Open a Ticket (Coming Soon)</a>
+    <!-- Projects List -->
+    <div class="projects-section">
+        <div class="projects-header">
+            <h2>Your Projects</h2>
+            <a href="<?= BASE_PATH ?>/get-started" class="btn-view" style="background: #28a745; color: white; border-color: #28a745;">+ New Project</a>
         </div>
+        
+        <?php if (empty($projects)): ?>
+            <div class="empty-state">
+                <p>You don't have any active projects yet.</p>
+                <a href="<?= BASE_PATH ?>/get-started">Start a new project</a>
+            </div>
+        <?php else: ?>
+            <ul class="project-list">
+                <?php foreach ($projects as $project): ?>
+                    <li class="project-item">
+                        <div class="project-info">
+                            <h4><?= htmlspecialchars($project['title']) ?></h4>
+                            <div class="project-meta">
+                                <span class="badge <?= getStatusBadgeClass($project['status']) ?>">
+                                    <?= htmlspecialchars($project['status']) ?>
+                                </span>
+                                <span style="margin-left: 10px;">
+                                    Package: <?= htmlspecialchars($project['package_name']) ?>
+                                </span>
+                                <span style="margin-left: 10px; color: #999;">
+                                    Created: <?= date('M j, Y', strtotime($project['created_at'])) ?>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- 
+                            Future: Link to a detailed project view if needed.
+                            For now, we just show the list as requested ("abstract away").
+                        -->
+                        <!-- <a href="<?= BASE_PATH ?>/client/projects/<?= $project['id'] ?>" class="btn-view">View Details</a> -->
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
     </div>
 </div>

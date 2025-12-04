@@ -2,34 +2,56 @@
 // src/Controllers/ContactController.php
 namespace Controllers; 
 
-use Models\PackageModel; // Import PackageModel
+use Models\PackageModel;
+use Models\ProjectModel;
+use Models\UserModel;
 
 class ContactController extends BaseController {
     
     /**
      * Handles the GET request for the /contact route.
-     * Shows the contact form to the user and handles package pre-selection.
+     * Shows the contact form to the user and handles package/project pre-selection.
      */
     public function showForm(): void {
-        // Use the null coalescing operator (??) to safely check if $_GET['status'] exists.
         $status = $_GET['status'] ?? '';
-        $packageId = $_GET['package_id'] ?? null; // Check for package ID
+        $packageId = $_GET['package_id'] ?? null;
+        $projectId = $_GET['project_id'] ?? null;
+        
         $initialMessage = '';
+        $prefilledName = '';
+        $prefilledEmail = '';
 
-        // Handle pre-filling the message if a package is selected
+        // 1. Pre-fill User Details if Logged In
+        if (isset($_SESSION['user_id'])) {
+            $userModel = new UserModel();
+            $user = $userModel->getUserById($_SESSION['user_id']);
+            if ($user) {
+                $prefilledName = $user['username']; // Or a separate 'full_name' field if you have one
+                $prefilledEmail = $user['email'];
+            }
+        }
+
+        // 2. Handle Package Pre-selection
         if ($packageId && is_numeric($packageId)) {
             $packageModel = new PackageModel();
-            
-            // FIX: Changed 'getById' to the correct method name 'getPackageById'
             $package = $packageModel->getPackageById((int)$packageId); 
             
             if ($package) {
-                // Construct the helpful initial message
-                // Using null coalescing operator for safe access to array keys
                 $title = htmlspecialchars($package['title'] ?? 'Selected Package');
                 $price = number_format($package['price_base'] ?? 0, 2);
-
                 $initialMessage = "I would like to get a quote for the '{$title}' package (Base Price: R{$price}). Please provide details on how to proceed with this plan.";
+            }
+        }
+
+        // 3. Handle Project Support Context
+        if ($projectId && is_numeric($projectId)) {
+            $projectModel = new ProjectModel();
+            $project = $projectModel->getProjectById((int)$projectId);
+
+            if ($project) {
+                // Optional: Verify ownership if strictly private, but for support it's helpful context
+                $projectTitle = htmlspecialchars($project['title']);
+                $initialMessage = "Reference Project: {$projectTitle} (ID: {$projectId})\n\nI need assistance with the following:\n";
             }
         }
 
@@ -37,7 +59,9 @@ class ContactController extends BaseController {
             'pageTitle' => 'Contact Us | Start Your Project',
             'statusMessage' => $status === 'success' ? 'Your form was submitted successfully (via manual redirect).' : '', 
             'statusType' => 'alert-success',
-            'initialMessage' => $initialMessage // Pass the pre-filled message to the view
+            'initialMessage' => $initialMessage,
+            'prefilledName' => $prefilledName,
+            'prefilledEmail' => $prefilledEmail
         ];
         $this->render('contact', $data);
     }

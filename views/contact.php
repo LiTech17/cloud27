@@ -7,99 +7,125 @@
 $initialMessage = $data['initialMessage'] ?? ''; 
 $statusMessage = $data['statusMessage'] ?? ''; 
 $statusType = $data['statusType'] ?? 'alert-info';
+$prefilledName = $data['prefilledName'] ?? '';
+$prefilledEmail = $data['prefilledEmail'] ?? '';
 ?>
 
-<section class="section">
-    <div class="container-md mx-auto">
-        <!-- Page Header -->
-        <div class="text-center mb-8">
-            <h2 class="heading-2 mb-3">Get in Touch</h2>
-            <p class="text-lg text-secondary max-w-2xl mx-auto">
-                We'd love to hear about your project. Fill out the form below and we'll get back to you shortly.
-            </p>
-        </div>
+<!-- Hero Section -->
+<section class="hero-section" style="min-height: 40vh;">
+    <div class="container hero-content text-center">
+        <h1 class="mb-3 animate-on-scroll">Get in Touch</h1>
+        <p class="lead animate-on-scroll" style="animation-delay: 0.2s;">
+            We'd love to hear about your project. Fill out the form below and we'll get back to you shortly.
+        </p>
+    </div>
+</section>
 
-        <div class="max-w-xl mx-auto">
-            <!-- Status Message Block (Server-side) -->
-            <?php if (!empty($statusMessage)): ?>
-                <div class="alert alert-<?= $statusType === 'alert-success' ? 'success' : 'error' ?> mb-6 animate-slide-down">
-                    <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="alert-content">
-                        <p class="alert-message"><?= htmlspecialchars($statusMessage) ?></p>
+<section class="section section-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <!-- Status Message Block (Server-side) -->
+                <?php if (!empty($statusMessage)): ?>
+                    <div class="alert alert-<?= $statusType === 'alert-success' ? 'success' : 'danger' ?> mb-4 animate-slide-down d-flex align-items-center shadow-sm">
+                        <i class="bi bi-<?= $statusType === 'alert-success' ? 'check-circle' : 'exclamation-circle' ?> fs-4 me-3"></i>
+                        <div>
+                            <?= htmlspecialchars($statusMessage) ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Form Status Message (AJAX) -->
+                <div id="form-status-message" style="display: none;" class="mb-4 animate-slide-down shadow-sm"></div>
+
+                <!-- Contact Form Card -->
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden animate-fade-in">
+                    <div class="card-body p-4 p-md-5">
+                        <form id="contactForm" action="<?= BASE_PATH ?>/contact" method="POST"> 
+                            
+                            <div class="row g-4">
+                                <!-- Name Field -->
+                                <div class="col-md-6">
+                                    <label for="name" class="form-label fw-semibold">Your Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                                        <input type="text" 
+                                               id="name" 
+                                               name="name" 
+                                               class="form-control bg-light border-start-0 ps-0" 
+                                               placeholder="John Doe"
+                                               value="<?= htmlspecialchars($prefilledName) ?>"
+                                               required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Email Field -->
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label fw-semibold">Your Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                                        <input type="email" 
+                                               id="email" 
+                                               name="email" 
+                                               class="form-control bg-light border-start-0 ps-0" 
+                                               placeholder="john@example.com"
+                                               value="<?= htmlspecialchars($prefilledEmail) ?>"
+                                               required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Message Field -->
+                                <div class="col-12">
+                                    <label for="message" class="form-label fw-semibold">Project Details</label>
+                                    <textarea id="message" 
+                                              name="message" 
+                                              rows="6" 
+                                              class="form-control bg-light" 
+                                              placeholder="Tell us about your project..."
+                                              required><?= htmlspecialchars($initialMessage) ?></textarea>
+                                    <div class="form-text">Please provide as much detail as possible about your requirements.</div>
+                                </div>
+                                
+                                <!-- Submit Button -->
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm" id="submit-btn">
+                                        <span id="btn-text"><i class="bi bi-send me-2"></i> Send Inquiry</span>
+                                        <span id="btn-spinner" style="display: none;" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            <?php endif; ?>
 
-            <!-- Form Status Message (AJAX) -->
-            <div id="form-status-message" style="display: none;" class="mb-6 animate-slide-down"></div>
+                <!-- Contact Info Cards -->
+                <div class="row g-4 mt-4">
+                    <div class="col-md-6 animate-on-scroll">
+                        <div class="card border-0 shadow-sm h-100 bg-white rounded-4">
+                            <div class="card-body text-center p-4">
+                                <div class="d-inline-flex align-items-center justify-content-center width-50 height-50 rounded-circle bg-primary-subtle text-primary mb-3" style="width: 50px; height: 50px;">
+                                    <i class="bi bi-envelope fs-4"></i>
+                                </div>
+                                <h5 class="fw-bold mb-1">Email Us</h5>
+                                <p class="text-muted mb-0">info@cloud27.co.za</p>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Contact Form Card -->
-            <div class="card shadow-lg">
-                <form id="contactForm" action="<?= BASE_PATH ?>/contact" method="POST" class="animate-fade-in"> 
-                    
-                    <!-- Name Field -->
-                    <div class="form-group">
-                        <label for="name" class="form-label">Your Name</label>
-                        <input type="text" 
-                               id="name" 
-                               name="name" 
-                               class="form-input" 
-                               placeholder="John Doe"
-                               required>
+                    <div class="col-md-6 animate-on-scroll" style="animation-delay: 0.1s;">
+                        <div class="card border-0 shadow-sm h-100 bg-white rounded-4">
+                            <div class="card-body text-center p-4">
+                                <div class="d-inline-flex align-items-center justify-content-center width-50 height-50 rounded-circle bg-info-subtle text-info mb-3" style="width: 50px; height: 50px;">
+                                    <i class="bi bi-clock-history fs-4"></i>
+                                </div>
+                                <h5 class="fw-bold mb-1">Response Time</h5>
+                                <p class="text-muted mb-0">Within 24 hours</p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- Email Field -->
-                    <div class="form-group">
-                        <label for="email" class="form-label">Your Email</label>
-                        <input type="email" 
-                               id="email" 
-                               name="email" 
-                               class="form-input" 
-                               placeholder="john@example.com"
-                               required>
-                        <span class="form-helper">We'll never share your email with anyone else.</span>
-                    </div>
-                    
-                    <!-- Message Field -->
-                    <div class="form-group">
-                        <label for="message" class="form-label">Project Details</label>
-                        <textarea id="message" 
-                                  name="message" 
-                                  rows="6" 
-                                  class="form-textarea" 
-                                  placeholder="Tell us about your project..."
-                                  required><?= htmlspecialchars($initialMessage) ?></textarea>
-                        <span class="form-helper">Please provide as much detail as possible about your requirements.</span>
-                    </div>
-                    
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary btn-lg w-full" id="submit-btn">
-                        <span id="btn-text">Send Inquiry</span>
-                        <span id="btn-spinner" style="display: none;" class="spinner spinner-sm"></span>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Contact Info Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                <div class="card text-center bg-brand-light">
-                    <svg class="mx-auto mb-3" style="width: 32px; height: 32px; color: var(--color-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <h4 class="text-base font-semibold mb-1">Email Us</h4>
-                    <p class="text-sm text-secondary">info@cloud27.co.za</p>
                 </div>
 
-                <div class="card text-center bg-brand-light">
-                    <svg class="mx-auto mb-3" style="width: 32px; height: 32px; color: var(--color-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <h4 class="text-base font-semibold mb-1">Response Time</h4>
-                    <p class="text-sm text-secondary">Within 24 hours</p>
-                </div>
             </div>
         </div>
     </div>
@@ -115,21 +141,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Helper function to show status messages with modern styling
     function showStatus(message, type) {
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
-        const icon = type === 'success' 
-            ? `<svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-               </svg>`
-            : `<svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-               </svg>`;
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle';
 
-        statusDiv.className = `alert ${alertClass} animate-slide-down`;
+        statusDiv.className = `alert ${alertClass} animate-slide-down d-flex align-items-center shadow-sm`;
         statusDiv.innerHTML = `
-            ${icon}
-            <div class="alert-content">
-                <p class="alert-message">${message}</p>
-            </div>
+            <i class="bi ${icon} fs-4 me-3"></i>
+            <div>${message}</div>
         `;
         statusDiv.style.display = 'flex';
 
@@ -184,3 +202,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+.form-control:focus {
+    box-shadow: none;
+    border-color: var(--bs-primary);
+    background-color: #fff;
+}
+.input-group-text {
+    border-color: var(--bs-border-color);
+}
+.form-control {
+    border-color: var(--bs-border-color);
+    padding: 0.75rem 1rem;
+}
+</style>

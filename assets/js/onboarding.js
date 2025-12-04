@@ -1,6 +1,6 @@
 // public/js/onboarding.js - Fixed for CORS and network issues
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('project-data-form');
     const stepContents = document.querySelectorAll('.step-content');
     const stepItems = document.querySelectorAll('.step-item');
@@ -19,23 +19,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let autoSaveTimer;
     let debounceTimer;
     const AUTOSAVE_DELAY = 1000;
-    
+
     // --- URL and Data Keys ---
     const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
     const projectId = form.dataset.projectId || form.action.match(/\/(\d+)$/)?.[1];
     if (!projectId) {
         console.error('CRITICAL ERROR: Project ID not found. Onboarding cannot function.');
-        return; 
+        return;
     }
     const STORAGE_KEY = `project_draft_${projectId}`;
     const STORAGE_STEP_KEY = `project_draft_step_${projectId}`;
-    const FORM_SUBMISSION_URL = form.action; 
+    const FORM_SUBMISSION_URL = form.action;
 
     // Load saved step from localStorage or URL hash
     let currentStep = 0;
     const savedStep = localStorage.getItem(STORAGE_STEP_KEY);
     const hashStep = window.location.hash.match(/step-(\d+)/);
-    
+
     if (hashStep) {
         const loadedStep = parseInt(hashStep[1]);
         if (loadedStep >= 0 && loadedStep < totalSteps) {
@@ -61,24 +61,24 @@ document.addEventListener('DOMContentLoaded', function() {
     function getFormDataAsObject() {
         const payload = {};
         const elements = form.elements;
-        const handledNames = new Set(); 
+        const handledNames = new Set();
 
         for (let i = 0; i < elements.length; i++) {
             const element = elements[i];
             const name = element.name;
-            
+
             if (!name || name === 'csrf_token' || name === 'current_step' || name === 'project_id' || element.type === 'file' || element.type === 'submit' || element.type === 'button' || handledNames.has(name)) {
                 continue;
             }
 
             if (element.type === 'checkbox') {
                 const sameNameCheckboxes = form.querySelectorAll(`input[name="${name}"][type="checkbox"]`);
-                
+
                 if (sameNameCheckboxes.length > 1) {
                     const checkedValues = Array.from(sameNameCheckboxes)
                         .filter(cb => cb.checked)
                         .map(cb => cb.value);
-                    
+
                     payload[name] = checkedValues;
                     handledNames.add(name);
                 } else {
@@ -89,15 +89,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (checkedRadio) {
                     payload[name] = checkedRadio.value;
                 } else {
-                    payload[name] = null; 
+                    payload[name] = null;
                 }
                 handledNames.add(name);
             } else {
                 payload[name] = element.value;
             }
         }
-        
-        payload['current_step'] = currentStep; 
+
+        payload['current_step'] = currentStep;
         return payload;
     }
 
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function getUrlEncodedData() {
         const data = new URLSearchParams();
         const formData = new FormData(form);
-        
+
         // Add all form fields except files
         for (let [key, value] of formData.entries()) {
             if (key !== 'brand_guidelines' && key !== 'business_profile') {
@@ -119,14 +119,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-        
+
         // Add draft flag
         if (currentStep < totalSteps - 1) {
             data.append('is_draft', '1');
         } else {
             data.append('is_draft', '0');
         }
-        
+
         return data;
     }
 
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.set('is_draft', '0');
         return formData;
     }
-    
+
     // ================================================================
     // SERVER-SIDE DRAFT SAVE FUNCTIONS - FIXED FOR CORS
     // ================================================================
@@ -147,10 +147,10 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Use URL-encoded data for draft saves to avoid CORS preflight
             const data = getUrlEncodedData();
-            
+
             console.log('💾 Saving draft to server via POST:', FORM_SUBMISSION_URL);
             console.log('📦 Data being sent:', Object.fromEntries(data.entries()));
-            
+
             const response = await fetch(FORM_SUBMISSION_URL, {
                 method: 'POST',
                 headers: {
@@ -181,9 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } catch (e) {
                     // Ignore if we can't read response body
                 }
-                
+
                 console.error('❌ Server draft save failed:', response.status, errorDetail);
-                
+
                 // Specific error handling
                 if (response.status === 413) {
                     showMessage('File size too large. Please reduce file sizes or remove files before saving draft.', 'error');
@@ -194,12 +194,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (response.status === 403) {
                     showMessage('Access denied. Please ensure you are logged in.', 'error');
                 }
-                
+
                 return false;
             }
         } catch (error) {
             console.error('❌ Network error during draft save:', error);
-            
+
             // Specific network error handling
             if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
                 showMessage('Network error. Please check your connection.', 'error');
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 showMessage('Connection failed. Data saved locally only.', 'warning');
             }
-            
+
             return false;
         }
     }
@@ -223,18 +223,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (savedData) {
                 const draftData = JSON.parse(savedData);
                 console.log('💾 Loaded draft from localStorage:', draftData);
-                
+
                 Object.keys(draftData).forEach(key => {
                     const value = draftData[key];
-                    const element = form.elements[key]; 
+                    const element = form.elements[key];
                     if (!element) return;
 
                     if (element.length && (element.item(0).type === 'radio' || element.item(0).type === 'checkbox')) {
-                        if (Array.isArray(value)) { 
+                        if (Array.isArray(value)) {
                             Array.from(element).forEach(cb => {
                                 cb.checked = value.includes(cb.value);
                             });
-                        } else { 
+                        } else {
                             const radio = form.querySelector(`input[name="${key}"][value="${value}"]`);
                             if (radio) radio.checked = true;
                         }
@@ -266,11 +266,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     cleanDraft[key] = value;
                 }
             }
-            
+
             if (Object.keys(cleanDraft).length === 1 && cleanDraft.current_step !== undefined) {
-                 return false;
+                return false;
             }
-            
+
             localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanDraft));
             localStorage.setItem(STORAGE_STEP_KEY, currentStep.toString());
 
@@ -306,23 +306,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // ================================================================
     // HELPER FUNCTIONS
     // ================================================================
-    
+
     function showMessage(message, type = 'success') {
         if (!ajaxMessage) return;
-        
+
         ajaxMessage.textContent = message;
         ajaxMessage.className = `alert alert-${type} mb-4 animate-slide-down`;
         ajaxMessage.classList.remove('hidden');
-        setTimeout(() => { 
+        setTimeout(() => {
             if (ajaxMessage) {
-                ajaxMessage.classList.add('hidden'); 
+                ajaxMessage.classList.add('hidden');
             }
-        }, 5000); 
+        }, 5000);
     }
 
     function showAutosave(message = 'Saved ✓', isSuccess = true) {
         if (!autosaveIndicator || !autosaveText) return;
-        
+
         autosaveText.textContent = message;
         autosaveIndicator.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 ${isSuccess ? 'bg-success text-white' : 'bg-error text-white'}`;
         autosaveIndicator.classList.remove('hidden');
@@ -347,25 +347,25 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingOverlay.classList.add('hidden');
         }
     }
-    
+
     function updateReviewSection() {
         const budgetSelect = document.getElementById('budget_range');
         const reviewCompany = document.getElementById('review-company');
         const reviewContact = document.getElementById('review-contact');
         const reviewEmail = document.getElementById('review-email');
         const reviewBudget = document.getElementById('review-budget');
-        
+
         if (reviewCompany) reviewCompany.textContent = document.getElementById('company_name')?.value || 'Not provided';
         if (reviewContact) reviewContact.textContent = document.getElementById('contact_name')?.value || 'Not provided';
         if (reviewEmail) reviewEmail.textContent = document.getElementById('contact_email')?.value || 'Not provided';
-        
+
         const budgetText = budgetSelect?.options[budgetSelect?.selectedIndex]?.text || 'Not specified';
         if (reviewBudget) reviewBudget.textContent = budgetText.trim();
     }
 
     function updateUI(stepIndex) {
         currentStep = stepIndex;
-        
+
         stepContents.forEach((content, index) => {
             content.classList.remove('active');
             if (index === stepIndex) {
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (stepContentArea) {
             stepContentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        
+
         if (currentStepInput) currentStepInput.value = stepIndex;
         updateProgress();
         if (stepIndex === totalSteps - 1) {
@@ -413,17 +413,17 @@ document.addEventListener('DOMContentLoaded', function() {
         let isValid = true;
         const currentContent = document.getElementById(`step-${currentStep}`);
         if (!currentContent) return true;
-        
+
         currentContent.querySelectorAll('.text-xs.text-error').forEach(el => el.textContent = '');
         currentContent.querySelectorAll('.form-input-error').forEach(el => el.classList.remove('form-input-error'));
 
         const requiredInputs = currentContent.querySelectorAll('input[required], select[required], textarea[required]');
-        
+
         const validatedNames = new Set();
         requiredInputs.forEach(input => {
             const name = input.name;
             const isGroupElement = (input.type === 'checkbox' || input.type === 'radio') && form.querySelectorAll(`[name="${name}"]`).length > 1;
-            
+
             if (input.closest('[data-required-group]') || (isGroupElement && validatedNames.has(name))) {
                 return;
             }
@@ -440,24 +440,24 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (!input.value.trim() || (isEmail && !input.value.match(emailRegex))) {
                 failed = true;
             }
-            
+
             if (failed) {
                 isValid = false;
                 input.classList.add('form-input-error');
-                
+
                 const errorEl = input.parentElement.querySelector('.text-xs.text-error') || input.closest('.form-group')?.querySelector('.text-xs.text-error');
-                
+
                 if (errorEl) {
                     errorEl.textContent = isEmail ? 'Please enter a valid email address.' : 'This field is required.';
                 }
             }
         });
-        
+
         const requiredGroups = currentContent.querySelectorAll('[data-required-group]');
         requiredGroups.forEach(group => {
             const checkboxes = group.querySelectorAll('input[type="checkbox"], input[type="radio"]');
             const hasChecked = Array.from(checkboxes).some(cb => cb.checked);
-            
+
             if (!hasChecked) {
                 isValid = false;
                 group.classList.add('form-input-error');
@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateProgress() {
         const allRequiredElements = Array.from(form.querySelectorAll('input[required], select[required], textarea[required], [data-required-group]'));
-        
+
         const countedElements = new Set();
         let totalTrackedElements = 0;
         let completedFields = 0;
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isRadioOrCheckbox = element.type === 'radio' || element.type === 'checkbox';
 
             if (!isGroup && element.closest('[data-required-group]')) {
-                return; 
+                return;
             }
 
             if (isRadioOrCheckbox) {
@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (countedElements.has(name)) return;
                 countedElements.add(name);
             }
-            
+
             totalTrackedElements++;
 
             if (isGroup) {
@@ -520,14 +520,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
+
         if (totalTrackedElements === 0) return;
 
         const progress = Math.min(100, Math.round((completedFields / totalTrackedElements) * 100));
         if (progressBar) progressBar.style.width = `${progress}%`;
         if (progressText) progressText.textContent = `${progress}% Complete`;
     }
-    
+
     // ================================================================
     // EVENT LISTENERS
     // ================================================================
@@ -540,9 +540,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentStep === totalSteps - 1) updateReviewSection();
         }, AUTOSAVE_DELAY);
     });
-    
+
     form.addEventListener('change', () => {
-        clearTimeout(debounceTimer); 
+        clearTimeout(debounceTimer);
         updateProgress();
         saveDraftToStorage(false);
         if (currentStep === totalSteps - 1) updateReviewSection();
@@ -555,11 +555,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     const serverSaved = await saveDraftToServer();
                     saveDraftToStorage(false);
-                    
+
                     if (currentStep < totalSteps - 1) {
                         updateUI(currentStep + 1);
                     }
-                    
+
                     if (!serverSaved) {
                         showMessage('Progress saved locally. Some features may not work until connection is restored.', 'warning');
                     }
@@ -618,20 +618,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
         if (!validateCurrentStep()) {
             showMessage('Please complete all required fields before submitting.', 'error');
-            e.preventDefault();
             return;
         }
-        
-        saveDraftToStorage(false); 
-        clearDraftFromStorage(); 
-        
-        console.log('🏁 Standard form submission allowed. Server will handle redirect/response.');
-        console.log('📤 Sending final submission to:', FORM_SUBMISSION_URL);
-        
+
+        saveDraftToStorage(false);
+
+        console.log('📤 Sending final submission via AJAX to:', FORM_SUBMISSION_URL);
         showLoading();
+
+        try {
+            const formData = new FormData(form);
+            // Ensure is_draft is 0 for final submit
+            formData.set('is_draft', '0');
+
+            const response = await fetch(FORM_SUBMISSION_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                clearDraftFromStorage();
+                showMessage(result.message || 'Project submitted successfully! Redirecting...', 'success');
+
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = `${basePath}/`;
+                }, 2000);
+            } else {
+                console.error('Submission failed:', result);
+                showMessage(result.message || 'Submission failed. Please check your inputs.', 'error');
+                hideLoading();
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            showMessage('An error occurred. Please try again.', 'error');
+            hideLoading();
+        }
     });
 
     // ================================================================
@@ -642,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const savedData = localStorage.getItem(STORAGE_KEY);
             const parsedData = JSON.parse(savedData);
-            
+
             const hasSubstantialData = Object.keys(parsedData).some(key => key !== 'current_step');
 
             if (hasSubstantialData) {
@@ -651,7 +680,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     loadDraftFromStorage();
                 } else {
                     clearDraftFromStorage();
-                    currentStep = 0; 
+                    currentStep = 0;
                 }
             } else {
                 clearDraftFromStorage();

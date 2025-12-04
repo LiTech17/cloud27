@@ -1,115 +1,525 @@
 /*
  * public/css/onboarding.css
- * Styling for the multi-step onboarding form.
- * NOTE: Assumes Tailwind CSS utilities (like flex, mb-6, w-full, etc.) are available.
+ * Ultra-Readable, High-Contrast, Theme-Aware Onboarding UI
+ *
+ * OVERRIDES global styles.css for onboarding pages only
  */
 
-/* Grid Layout */
+/* ========================================
+   FORCED THEME VARIABLES FOR ONBOARDING ONLY
+   Using !important to override global styles.css
+======================================== */
+.onboarding-wrapper,
+.onboarding-wrapper :root {
+    /* Light theme (default) - override global styles */
+    --onboarding-bg-primary: #ffffff !important;
+    --onboarding-bg-secondary: #f9fafb !important;
+    --onboarding-bg-tertiary: #e5e7eb !important;
+
+    --onboarding-text-primary: #1a1a1a !important;
+    --onboarding-text-secondary: #4b5563 !important;
+    --onboarding-text-muted: #6b7280 !important;
+
+    --onboarding-border-light: #e5e7eb !important;
+    --onboarding-border-medium: #d1d5db !important;
+
+    --onboarding-primary: #667eea !important;
+    --onboarding-primary-strong: #6366f1 !important;
+    --onboarding-primary-light: rgba(102, 126, 234, 0.1) !important;
+    --onboarding-accent: #38bdf8 !important;
+    --onboarding-success: #10b981 !important;
+
+    --onboarding-gradient-ocean: linear-gradient(135deg, #667eea, #764ba2) !important;
+    --onboarding-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+    --onboarding-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    --onboarding-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* HIGH-CONTRAST DARK MODE - FORCE OVERRIDE global dark mode */
+[data-theme="dark"] .onboarding-wrapper,
+[data-bs-theme="dark"] .onboarding-wrapper {
+    /* Dark theme - override global dark mode */
+    --onboarding-bg-primary: #0f1117 !important;
+    --onboarding-bg-secondary: #1a1d24 !important;
+    --onboarding-bg-tertiary: #252932 !important;
+
+    --onboarding-text-primary: #ffffff !important;
+    --onboarding-text-secondary: #e5e7eb !important;
+    --onboarding-text-muted: #9ca3af !important;
+
+    --onboarding-border-light: #374151 !important;
+    --onboarding-border-medium: #4b5563 !important;
+
+    --onboarding-primary: #8fa2ff !important;
+    --onboarding-primary-strong: #a5b4fc !important;
+    --onboarding-primary-light: rgba(143, 162, 255, 0.15) !important;
+    --onboarding-accent: #60c5ff !important;
+
+    --onboarding-gradient-ocean: linear-gradient(135deg, #8fa2ff, #a78bfa) !important;
+    --onboarding-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+    --onboarding-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    --onboarding-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ========================================
+   GLOBAL ONBOARDING OVERRIDES
+   All styles scoped to .onboarding-wrapper
+======================================== */
 .onboarding-wrapper {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 2rem;
+    display: grid !important;
+    grid-template-columns: 280px 1fr !important;
+    gap: 2rem !important;
+    align-items: start !important;
+    background: var(--onboarding-bg-primary) !important;
+    min-height: 100vh !important;
+    padding: 2rem !important;
 }
 
-/* Sidebar Styling */
-.step-sidebar {
-    position: sticky;
-    top: 100px; /* Adjust based on fixed header height */
-    background: var(--color-surface);
-    padding: 1.5rem;
-    border-radius: var(--radius-lg);
-    height: fit-content;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border);
-    z-index: 50; /* Ensure sidebar is above content but below overlays */
+/* Force dark background for entire onboarding in dark mode */
+[data-theme="dark"] .onboarding-wrapper,
+[data-bs-theme="dark"] .onboarding-wrapper {
+    background: var(--onboarding-bg-primary) !important;
 }
 
-/* Step Item Styling */
-.step-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    color: var(--color-text-secondary);
-    transition: all var(--transition-fast, 0.2s);
-}
-
-.step-item:hover:not(.active) {
-    background: var(--color-surface-hover);
-    transform: translateX(2px);
-    color: var(--color-text);
-}
-
-.step-item.active {
-    background: var(--color-primary);
-    color: white;
-    font-weight: 600;
-}
-
-/* Completed Step Styling */
-.step-item.completed .step-icon {
-    /* Styles for the checkmark icon when a step is completed */
-    color: var(--color-success);
-}
-
-/* Step Content Transitions (Main Area) */
-.step-content {
-    display: none;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.step-content.active {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Sticky Footer Navigation */
-.form-navigation-footer {
-    position: sticky;
-    bottom: 0;
-    background: var(--color-surface);
-    padding: 1rem 0;
-    border-top: 1px solid var(--color-border);
-    z-index: 40;
-}
-
-/* Checkbox/Radio Group Styling (for card/label selection) */
-.form-checkbox-label {
-    /* Assuming this class is applied to a <label> wrapping an input */
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast, 0.2s);
-}
-
-.form-checkbox-label:hover {
-    border-color: var(--color-primary);
-}
-
-.form-checkbox-label:has(input:checked) {
-    border-color: var(--color-primary);
-    /* Fallback and dynamic color for checked state background */
-    background: color-mix(in srgb, var(--color-primary, #007bff) 5%, transparent);
-}
-
-/* Progress Bar Colors (Assuming progress bar is styled by Tailwind or a framework) */
-#progress-bar {
-    background: var(--color-primary);
-}
-
-/* Responsive design */
-@media (max-width: 1024px) {
+@media (max-width:1024px) {
     .onboarding-wrapper {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+        grid-template-columns: 1fr !important;
     }
-    
-    .step-sidebar {
-        position: relative;
-        top: 0;
+}
+
+/* ========================================
+   SIDEBAR NAVIGATION
+======================================== */
+.onboarding-wrapper .step-sidebar {
+    position: sticky !important;
+    top: 100px !important;
+    background: var(--onboarding-bg-secondary) !important;
+    padding: 1.5rem !important;
+    border-radius: 1rem !important;
+    border: 1px solid var(--onboarding-border-light) !important;
+    box-shadow: var(--onboarding-shadow-sm) !important;
+    transition: all .22s ease !important;
+}
+
+.onboarding-wrapper .step-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: .75rem !important;
+    padding: .75rem 1rem !important;
+    border-radius: .5rem !important;
+    cursor: pointer !important;
+    color: var(--onboarding-text-secondary) !important;
+    font-weight: 500 !important;
+    transition: all .18s ease !important;
+    margin-bottom: .5rem !important;
+}
+
+.onboarding-wrapper .step-item:hover:not(.active) {
+    background: var(--onboarding-bg-tertiary) !important;
+    color: var(--onboarding-text-primary) !important;
+    transform: translateX(4px) !important;
+}
+
+.onboarding-wrapper .step-item.active {
+    background: var(--onboarding-gradient-ocean) !important;
+    color: #fff !important;
+    box-shadow: var(--onboarding-shadow-md) !important;
+}
+
+.onboarding-wrapper .step-item.completed {
+    color: var(--onboarding-success) !important;
+}
+
+/* ========================================
+   MAIN CONTENT CARD
+======================================== */
+.onboarding-wrapper .card {
+    background: var(--onboarding-bg-secondary) !important;
+    border-radius: 1rem !important;
+    border: 1px solid var(--onboarding-border-light) !important;
+    box-shadow: var(--onboarding-shadow-lg) !important;
+    transition: background-color .2s ease, border-color .2s ease !important;
+    color: var(--onboarding-text-primary) !important;
+}
+
+/* Headings - override global styles */
+.onboarding-wrapper .heading-2,
+.onboarding-wrapper .heading-3 {
+    color: var(--onboarding-text-primary) !important;
+}
+
+/* Secondary text */
+.onboarding-wrapper .text-secondary {
+    color: var(--onboarding-text-secondary) !important;
+    opacity: 1 !important;
+}
+
+/* ========================================
+   FORM ELEMENTS - FORCE OVERRIDE GLOBAL STYLES
+======================================== */
+.onboarding-wrapper .form-group {
+    margin-bottom: 2rem !important;
+}
+
+.onboarding-wrapper .form-label,
+.onboarding-wrapper label {
+    display: block !important;
+    margin-bottom: .75rem !important;
+    font-weight: 600 !important;
+    color: var(--onboarding-text-primary) !important;
+    font-size: .95rem !important;
+}
+
+/* Force input styles to override global */
+.onboarding-wrapper .form-input,
+.onboarding-wrapper .form-textarea,
+.onboarding-wrapper .form-select,
+.onboarding-wrapper input:not([type="hidden"]),
+.onboarding-wrapper textarea,
+.onboarding-wrapper select,
+.onboarding-wrapper .card input:not([type="hidden"]),
+.onboarding-wrapper .card textarea,
+.onboarding-wrapper .card select {
+    width: 100% !important;
+    padding: .85rem 1rem !important;
+    border-radius: .5rem !important;
+    border: 1px solid var(--onboarding-border-light) !important;
+    background: var(--onboarding-bg-primary) !important;
+    color: var(--onboarding-text-primary) !important;
+    transition: all .18s ease !important;
+    font-size: 1rem !important;
+    margin-bottom: 1rem !important;
+    box-sizing: border-box !important;
+}
+
+/* Dark mode inputs */
+.onboarding-wrapper[data-theme="dark"] .form-input,
+.onboarding-wrapper[data-theme="dark"] .form-textarea,
+.onboarding-wrapper[data-theme="dark"] .form-select,
+.onboarding-wrapper[data-theme="dark"] input:not([type="hidden"]),
+.onboarding-wrapper[data-theme="dark"] textarea,
+.onboarding-wrapper[data-theme="dark"] select {
+    background: var(--onboarding-bg-primary) !important;
+    border-color: var(--onboarding-border-medium) !important;
+    color: var(--onboarding-text-primary) !important;
+}
+
+/* Placeholder visibility */
+.onboarding-wrapper .form-input::placeholder,
+.onboarding-wrapper .form-textarea::placeholder {
+    color: var(--onboarding-text-muted) !important;
+    opacity: 1 !important;
+}
+
+/* Focus states - override global focus styles */
+.onboarding-wrapper .form-input:focus,
+.onboarding-wrapper .form-textarea:focus,
+.onboarding-wrapper .form-select:focus,
+.onboarding-wrapper input:focus,
+.onboarding-wrapper textarea:focus,
+.onboarding-wrapper select:focus {
+    outline: none !important;
+    border-color: var(--onboarding-primary-strong) !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+    background: var(--onboarding-bg-primary) !important;
+    color: var(--onboarding-text-primary) !important;
+}
+
+.onboarding-wrapper[data-theme="dark"] .form-input:focus,
+.onboarding-wrapper[data-theme="dark"] .form-textarea:focus,
+.onboarding-wrapper[data-theme="dark"] .form-select:focus,
+.onboarding-wrapper[data-theme="dark"] input:focus,
+.onboarding-wrapper[data-theme="dark"] textarea:focus,
+.onboarding-wrapper[data-theme="dark"] select:focus {
+    border-color: var(--onboarding-primary) !important;
+    box-shadow: 0 0 0 4px rgba(143, 162, 255, 0.2) !important;
+}
+
+/* Form rows */
+.onboarding-wrapper .form-row,
+.onboarding-wrapper .form-fields {
+    display: flex !important;
+    gap: 1rem !important;
+    flex-wrap: wrap !important;
+}
+
+.onboarding-wrapper .form-row>* {
+    margin-bottom: 1rem !important;
+}
+
+/* Checkbox/Radio groups */
+.onboarding-wrapper .form-checkbox-label {
+    border: 1px solid var(--onboarding-border-light) !important;
+    border-radius: .5rem !important;
+    transition: all .16s ease !important;
+    background: var(--onboarding-bg-primary) !important;
+    padding: .9rem !important;
+    margin-bottom: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: .75rem !important;
+    color: var(--onboarding-text-primary) !important;
+}
+
+.onboarding-wrapper .form-checkbox-label:hover {
+    border-color: var(--onboarding-primary) !important;
+    transform: translateY(-2px) !important;
+}
+
+.onboarding-wrapper .form-checkbox-label:has(input:checked) {
+    border-color: var(--onboarding-primary) !important;
+    background: var(--onboarding-primary-light) !important;
+}
+
+/* ========================================
+   BUTTONS - OVERRIDE GLOBAL BUTTON STYLES
+======================================== */
+.onboarding-wrapper .btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem 2.5rem !important;
+    border-radius: 50px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    font-size: 1.1rem !important;
+    border: none !important;
+    transition: all .23s ease !important;
+}
+
+.onboarding-wrapper .btn-primary {
+    background: var(--onboarding-gradient-ocean) !important;
+    color: #fff !important;
+    box-shadow: var(--onboarding-shadow-md) !important;
+}
+
+.onboarding-wrapper .btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--onboarding-shadow-lg) !important;
+}
+
+/* ========================================
+   UTILITY OVERRIDES - FORCE ONBOARDING THEME
+======================================== */
+.onboarding-wrapper .bg-surface-50,
+.onboarding-wrapper .bg-surface-100,
+.onboarding-wrapper .bg-surface-200 {
+    background-color: var(--onboarding-bg-secondary) !important;
+    border-color: var(--onboarding-border-light) !important;
+}
+
+.onboarding-wrapper .text-primary {
+    color: var(--onboarding-primary) !important;
+}
+
+.onboarding-wrapper .text-secondary {
+    color: var(--onboarding-text-secondary) !important;
+}
+
+.onboarding-wrapper .text-muted {
+    color: var(--onboarding-text-muted) !important;
+}
+
+.onboarding-wrapper .border-border {
+    border-color: var(--onboarding-border-light) !important;
+}
+
+.onboarding-wrapper .spinner-primary {
+    border-top-color: var(--onboarding-primary) !important;
+    border-right-color: var(--onboarding-border-light) !important;
+    border-bottom-color: var(--onboarding-border-light) !important;
+    border-left-color: var(--onboarding-border-light) !important;
+}
+
+.onboarding-wrapper .btn-secondary {
+    background: var(--onboarding-bg-tertiary) !important;
+    color: var(--onboarding-text-primary) !important;
+}
+
+.onboarding-wrapper .btn-secondary:hover {
+    background: var(--onboarding-border-light) !important;
+}
+
+/* ========================================
+   ALERTS & STATUS
+======================================== */
+.onboarding-wrapper .alert {
+    padding: 1rem !important;
+    border-radius: .5rem !important;
+    margin-bottom: 1rem !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: .75rem !important;
+    color: var(--onboarding-text-primary) !important;
+}
+
+.onboarding-wrapper .alert-error {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border: 1px solid rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+}
+
+.onboarding-wrapper[data-theme="dark"] .alert-error {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+.onboarding-wrapper .alert-success {
+    background: rgba(16, 185, 129, 0.08) !important;
+    border: 1px solid rgba(16, 185, 129, 0.15) !important;
+    color: var(--onboarding-success) !important;
+}
+
+.onboarding-wrapper[data-theme="dark"] .alert-success {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+/* ========================================
+   ANIMATIONS
+======================================== */
+.onboarding-wrapper .step-content {
+    display: none !important;
+    animation: fadeIn .4s ease-out !important;
+}
+
+.onboarding-wrapper .step-content.active {
+    display: block !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   QUOTE SUMMARY (SIDEBAR)
+======================================== */
+.onboarding-wrapper #live-quote-summary {
+    background: var(--onboarding-bg-secondary) !important;
+    border: 1px solid var(--onboarding-border-light) !important;
+    padding: 1rem !important;
+    border-radius: .75rem !important;
+    color: var(--onboarding-text-primary) !important;
+}
+
+.onboarding-wrapper #live-total {
+    color: var(--onboarding-primary) !important;
+}
+
+/* ========================================
+   SPINNER
+======================================== */
+.onboarding-wrapper .spinner {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    border: 3px solid var(--onboarding-border-light) !important;
+    border-radius: 50% !important;
+    border-top-color: var(--onboarding-primary) !important;
+    animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   NAVIGATION FOOTER
+======================================== */
+.onboarding-wrapper .form-navigation-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 4rem !important;
+    padding-top: 2.5rem !important;
+    border-top: 1px solid var(--onboarding-border-light) !important;
+}
+
+/* ========================================
+   ACCESSIBILITY HELPERS
+======================================== */
+.onboarding-wrapper a,
+.onboarding-wrapper .link {
+    color: var(--onboarding-primary-strong) !important;
+}
+
+.onboarding-wrapper a:hover,
+.onboarding-wrapper .link:hover {
+    color: var(--onboarding-primary) !important;
+}
+
+/* Disabled inputs */
+.onboarding-wrapper input[disabled],
+.onboarding-wrapper textarea[disabled],
+.onboarding-wrapper select[disabled] {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    background: var(--onboarding-bg-tertiary) !important;
+}
+
+/* Selection color */
+.onboarding-wrapper ::selection {
+    background-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+.onboarding-wrapper[data-theme="dark"] ::selection {
+    background-color: rgba(143, 162, 255, 0.4) !important;
+}
+
+/* ========================================
+   IMPORTANT: RESET GLOBAL STYLES FOR ONBOARDING
+   This section overrides problematic global styles
+======================================== */
+
+/* Override global wave effects */
+.onboarding-wrapper .ocean-waves,
+.onboarding-wrapper .wave-layer,
+.onboarding-wrapper .hero-section,
+.onboarding-wrapper .hero-content,
+.onboarding-wrapper .hero-overlay {
+    display: none !important;
+}
+
+/* Override global card styles that might interfere */
+.onboarding-wrapper .feature-card,
+.onboarding-wrapper .package-card,
+.onboarding-wrapper .custom-card {
+    all: unset !important;
+}
+
+/* Reset any global button styles for onboarding buttons */
+.onboarding-wrapper .btn-primary,
+.onboarding-wrapper .btn-secondary {
+    all: unset !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem 2.5rem !important;
+    border-radius: 50px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    font-size: 1.1rem !important;
+    border: none !important;
+    transition: all .23s ease !important;
+}
+
+/* Specifically override global .btn-primary gradient */
+.onboarding-wrapper .btn-primary {
+    background: var(--onboarding-gradient-ocean) !important;
+    color: #fff !important;
+    box-shadow: var(--onboarding-shadow-md) !important;
+}
+
+.onboarding-wrapper .btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--onboarding-shadow-lg) !important;
 }

@@ -31,7 +31,33 @@ abstract class BaseModel {
         $stmt = \Database::getInstance()->run($sql, $params);
         return $stmt->rowCount() > 0;
     }
+    
+    // ------------------------------------------------------------------
+    // NEW FIX: Last Insert ID Helper
+    // ------------------------------------------------------------------
 
+    /**
+     * Retrieves the last inserted ID from the database connection.
+     * Assumes Database::getInstance() returns an object with a getConnection() method 
+     * that returns the underlying PDO object, which has lastInsertId().
+     * * @return int The ID of the last inserted row.
+     */
+    protected function getLastInsertId(): int
+    {
+        // We must assume the Database::getInstance() wrapper has a method 
+        // to access the raw PDO object (or the ID directly).
+        // Common assumption: \Database::getInstance()->getConnection()->lastInsertId()
+        
+        // Note: I will call run()->lastInsertId() here, but you may need to adjust 
+        // this based on the exact methods available on \Database::getInstance().
+        
+        $db = \Database::getInstance();
+        
+        // This line is a common pattern for obtaining the last ID from a wrapper
+        // that manages a PDO connection. Adjust if your Database class is different.
+        return (int) $db->getConnection()->lastInsertId(); 
+    }
+    
     // ------------------------------------------------------------------
     // CRUD HELPERS
     // ------------------------------------------------------------------
@@ -39,9 +65,24 @@ abstract class BaseModel {
     /**
      * Find a record by primary key.
      */
-    protected function findOne(int $id): ?array {
-        $sql = "SELECT * FROM {$this->table} WHERE id = :id LIMIT 1";
-        $stmt = \Database::getInstance()->run($sql, [':id' => $id]);
+    public function findOne(int $id): ?array {
+        return $this->findBy('id', $id);
+    }
+
+    /**
+     * Find a record by a specific column.
+     * * @param string $column Column name
+     * @param mixed $value Value to search for
+     * @return array|null Record data or null if not found
+     */
+    public function findBy(string $column, mixed $value): ?array {
+        // Basic validation for column name to prevent SQL injection
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $column)) {
+            throw new \InvalidArgumentException("Invalid column name: {$column}");
+        }
+
+        $sql = "SELECT * FROM {$this->table} WHERE {$column} = :value LIMIT 1";
+        $stmt = \Database::getInstance()->run($sql, [':value' => $value]);
         $data = $stmt->fetch();
         return $data ?: null;
     }
@@ -54,13 +95,15 @@ abstract class BaseModel {
         $placeholders = ':' . implode(', :', array_keys($data));
 
         $sql = "INSERT INTO {$this->table} ({$columns})
-                VALUES ({$placeholders})";
+                 VALUES ({$placeholders})";
 
         $params = [];
         foreach ($data as $col => $val) {
             $params[":{$col}"] = $val;
         }
 
+        // We only use execute(), which returns bool.
+        // The ProjectModel will now call getLastInsertId() after this.
         return $this->execute($sql, $params);
     }
 

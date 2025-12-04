@@ -6,6 +6,8 @@ namespace Controllers;
 // --- REQUIRED DEPENDENCIES ---
 use Models\UserModel;
 use Models\ServiceModel;
+use Models\ProjectModel;
+use Models\PackageModel;
 // \Logger is assumed to be in the global namespace (src/Logger.php)
 // --- --------------------- ---
 
@@ -87,7 +89,22 @@ class AdminController extends BaseController {
     }
 
     public function dashboard(): void {
-        $this->render('admin/dashboard', ['title' => 'Admin Dashboard']);
+        $projectModel = new ProjectModel();
+        $serviceModel = new ServiceModel();
+        $packageModel = new \Models\PackageModel();
+        $userModel = new UserModel();
+
+        $stats = [
+            'projects' => $projectModel->getProjectStats(),
+            'services_count' => count($serviceModel->getAllServices()),
+            'packages_count' => count($packageModel->getAllPackages()),
+            'users_count' => count($userModel->getAllUsers())
+        ];
+
+        $this->render('admin/dashboard', [
+            'title' => 'Admin Dashboard',
+            'stats' => $stats
+        ]);
     }
 
     // ------------------------------------------------------------------------

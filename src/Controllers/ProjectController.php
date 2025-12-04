@@ -87,14 +87,8 @@ class ProjectController extends BaseController
             $this->redirect('/login');
         }
 
-        $this->render('client/projects/create', [
-            'title' => 'Create New Project',
-            // OPTIMIZATION: Get packages dynamically from the Model/DB
-            'packages' => $this->projectModel->getAvailablePackages(), 
-            'errors' => $_SESSION['error'] ?? []
-        ]);
-
-        unset($_SESSION['error']);
+        // Redirect to the main onboarding flow
+        $this->redirect('/get-started');
     }
 
     public function store(): void
@@ -154,9 +148,14 @@ class ProjectController extends BaseController
             return;
         }
 
+        // Fetch onboarding details
+        $onboardingDetailsModel = new \Models\OnboardingDetailsModel();
+        $onboardingDetails = $onboardingDetailsModel->findBy('project_id', $id);
+
         $this->render('client/projects/show', [
             'title' => 'Project: ' . htmlspecialchars($project['title']),
-            'project' => $project
+            'project' => $project,
+            'onboardingDetails' => $onboardingDetails
         ]);
     }
 

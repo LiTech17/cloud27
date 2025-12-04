@@ -13,7 +13,8 @@ class ProjectModel extends BaseModel
     protected string $table = 'projects';
 
     /** @var array Columns allowed for mass assignment */
-    private $allowedFields = [
+    // NOTE: Changed to protected visibility for consistency/inheritance if needed.
+    protected $allowedFields = [ 
         'client_id',
         'title',
         'description',
@@ -21,7 +22,9 @@ class ProjectModel extends BaseModel
         'status',
         'budget',
         'start_date',
-        'due_date'
+        'due_date',
+        // --- NEW FIELD ADDED ---
+        'uploaded_logo_path' // For storing the path to the client's logo
     ];
 
     /** @var array Valid project statuses */
@@ -37,12 +40,12 @@ class ProjectModel extends BaseModel
 
     // ========================================================================
     // READ OPERATIONS
+    // (methods remain unchanged)
     // ========================================================================
 
     /**
      * Get a single project by ID
-     * 
-     * @param int $id Project ID
+     * * @param int $id Project ID
      * @return array|null Project data or null if not found
      */
     public function getProjectById(int $id): ?array
@@ -52,31 +55,29 @@ class ProjectModel extends BaseModel
 
     /**
      * Get all projects for a specific client
-     * 
-     * @param int $clientId Client ID
+     * * @param int $clientId Client ID
      * @return array Array of projects
      */
     public function getAllByClient(int $clientId): array
     {
         $sql = "SELECT * FROM {$this->table} 
-                WHERE client_id = :client_id 
-                ORDER BY updated_at DESC";
+                 WHERE client_id = :client_id 
+                 ORDER BY updated_at DESC";
         
         return $this->query($sql, [':client_id' => $clientId]);
     }
 
     /**
      * Get all projects with optional filters (admin view)
-     * 
-     * @param array $filters Optional filters (client_id, status, package_name)
+     * * @param array $filters Optional filters (client_id, status, package_name)
      * @return array Array of projects
      */
     public function getAllProjects(array $filters = []): array
     {
         $sql = "SELECT p.*, u.username as client_name, u.email as client_email 
-                FROM {$this->table} p 
-                LEFT JOIN users u ON p.client_id = u.id 
-                WHERE 1=1";
+                 FROM {$this->table} p 
+                 LEFT JOIN users u ON p.client_id = u.id 
+                 WHERE 1=1";
         
         $params = [];
         
@@ -103,8 +104,7 @@ class ProjectModel extends BaseModel
 
     /**
      * Get project statistics
-     * 
-     * @param int|null $clientId Optional client ID to filter stats
+     * * @param int|null $clientId Optional client ID to filter stats
      * @return array Statistics array
      */
     public function getProjectStats(?int $clientId = null): array
@@ -113,13 +113,13 @@ class ProjectModel extends BaseModel
         $params = $clientId ? [':client_id' => $clientId] : [];
         
         $sql = "SELECT 
-                    COUNT(*) as total,
-                    SUM(CASE WHEN status = 'New' THEN 1 ELSE 0 END) as new,
-                    SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as in_progress,
-                    SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed,
-                    SUM(budget) as total_budget
-                FROM {$this->table} 
-                {$where}";
+                        COUNT(*) as total,
+                        SUM(CASE WHEN status = 'New' THEN 1 ELSE 0 END) as new,
+                        SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as in_progress,
+                        SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed,
+                        SUM(budget) as total_budget
+                    FROM {$this->table} 
+                    {$where}";
         
         $result = $this->query($sql, $params);
         return $result[0] ?? [];
@@ -127,15 +127,14 @@ class ProjectModel extends BaseModel
 
     /**
      * Search projects by keyword
-     * 
-     * @param string $keyword Search keyword
+     * * @param string $keyword Search keyword
      * @param int|null $clientId Optional client ID filter
      * @return array Array of matching projects
      */
     public function searchProjects(string $keyword, ?int $clientId = null): array
     {
         $sql = "SELECT * FROM {$this->table} 
-                WHERE (title LIKE :keyword OR description LIKE :keyword)";
+                 WHERE (title LIKE :keyword OR description LIKE :keyword)";
         
         $params = [':keyword' => "%{$keyword}%"];
         
@@ -154,23 +153,25 @@ class ProjectModel extends BaseModel
     // ========================================================================
 
     /**
-     * Create a new project
-     * 
-     * @param array $data Project data
-     * @return bool Success status
+     * Create a new project record and returns the ID of the newly inserted row.
+     * * NOTE: This method is used by the GetStartedController to save the project 
+     * before saving its related onboarding details.
+     * * @param array $data Project data (must contain client_id, title, package_name)
+     * @return int|false The new project ID on success, or false on failure.
      */
-    public function createProject(array $data): bool
+    public function createProjectAndReturnId(array $data): int|false
     {
         $filtered = $this->filterAllowed($data);
         
         // Validate data
         $errors = $this->validate($filtered);
         if (!empty($errors)) {
-            error_log("Project creation failed: " . implode(', ', $errors));
+            error_log("Project creation failed (Validation): " . implode(', ', $errors));
+            // Log the errors internally but don't expose them in the return type
             return false;
         }
         
-        // Set default values
+        // Set default values if missing
         if (!isset($filtered['status'])) {
             $filtered['status'] = 'New';
         }
@@ -179,13 +180,41 @@ class ProjectModel extends BaseModel
             $filtered['budget'] = 0.00;
         }
         
-        return $this->insert($filtered);
+        // The BaseModel::insert method typically returns a boolean (success/fail).
+        // To get the ID, we now use the new $this->getLastInsertId() method.
+        try {
+            $success = $this->insert($filtered); 
+
+            if ($success) {
+                // *** FIX APPLIED HERE ***
+                // Replaced (int)$this->db->getLastInsertId() with the protected BaseModel method.
+                return $this->getLastInsertId(); 
+            }
+        } catch (\Throwable $e) {
+            error_log("DB ERROR: Failed to create project: " . $e->getMessage());
+            return false;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Create a new project (legacy/simple method)
+     * * NOTE: This method is functionally redundant after adding createProjectAndReturnId
+     * if the latter is used consistently, but kept here for backward compatibility.
+     * * @param array $data Project data
+     * @return bool Success status
+     */
+    public function createProject(array $data): bool
+    {
+        // We can just call the new method and cast the result
+        return (bool)$this->createProjectAndReturnId($data);
     }
 
     /**
      * Update an existing project
-     * 
-     * @param int $id Project ID
+     * * @param int $id Project ID
      * @param array $data Updated data
      * @return bool Success status
      */
@@ -206,8 +235,7 @@ class ProjectModel extends BaseModel
 
     /**
      * Update project status
-     * 
-     * @param int $id Project ID
+     * * @param int $id Project ID
      * @param string $status New status
      * @return bool Success status
      */
@@ -223,8 +251,7 @@ class ProjectModel extends BaseModel
 
     /**
      * Delete a project
-     * 
-     * @param int $id Project ID
+     * * @param int $id Project ID
      * @return bool Success status
      */
     public function deleteProject(int $id): bool
@@ -234,12 +261,12 @@ class ProjectModel extends BaseModel
 
     // ========================================================================
     // VALIDATION
+    // (methods remain unchanged)
     // ========================================================================
 
     /**
      * Validate project input data
-     * 
-     * @param array $data Data to validate
+     * * @param array $data Data to validate
      * @return array Array of error messages (empty if valid)
      */
     public function validate(array $data): array
@@ -302,8 +329,7 @@ class ProjectModel extends BaseModel
 
     /**
      * Validate date format
-     * 
-     * @param string $date Date string
+     * * @param string $date Date string
      * @return bool True if valid
      */
     private function isValidDate(string $date): bool
@@ -314,8 +340,7 @@ class ProjectModel extends BaseModel
 
     /**
      * Filter input data to allowed fields only
-     * 
-     * @param array $data Input data
+     * * @param array $data Input data
      * @return array Filtered data
      */
     private function filterAllowed(array $data): array
@@ -325,12 +350,12 @@ class ProjectModel extends BaseModel
 
     // ========================================================================
     // UTILITY METHODS
+    // (methods remain unchanged)
     // ========================================================================
 
     /**
      * Get all valid project statuses
-     * 
-     * @return array Array of valid statuses
+     * * @return array Array of valid statuses
      */
     public function getValidStatuses(): array
     {
@@ -339,8 +364,7 @@ class ProjectModel extends BaseModel
 
     /**
      * Get status badge color class
-     * 
-     * @param string $status Project status
+     * * @param string $status Project status
      * @return string CSS class name
      */
     public function getStatusColor(string $status): string
@@ -360,8 +384,7 @@ class ProjectModel extends BaseModel
 
     /**
      * Get available packages from database
-     * 
-     * @return array Array of package names
+     * * @return array Array of package names
      */
     public function getAvailablePackages(): array
     {

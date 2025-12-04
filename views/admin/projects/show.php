@@ -113,6 +113,64 @@ if (!$project) {
         </div>
     </div>
 
+    <!-- Onboarding Details Section -->
+    <?php if (!empty($data['onboardingDetails'])): $details = $data['onboardingDetails']; ?>
+    <div class="bg-base-100 shadow rounded-xl p-6 border border-base-300 mt-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Onboarding Submission</h2>
+            <!-- Action to Create Business Profile from this data -->
+            <a href="<?= BASE_PATH ?>/admin/projects/<?= $project['id'] ?>/create-profile" class="btn btn-sm btn-secondary">
+                <i class="fa-solid fa-magic-wand-sparkles"></i> Create Business Profile
+            </a>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="font-bold text-gray-500 mb-2 uppercase text-xs tracking-wide">Business Profile</h3>
+                <p class="mb-2"><strong>Company:</strong> <?= htmlspecialchars($details['company_name'] ?? '-') ?></p>
+                <p class="mb-2"><strong>Industry:</strong> <?= htmlspecialchars($details['industry'] ?? '-') ?></p>
+                <p class="mb-2"><strong>Mission:</strong> <?= htmlspecialchars($details['mission_statement'] ?? '-') ?></p>
+                <p class="mb-2"><strong>USP:</strong> <?= htmlspecialchars($details['usp'] ?? '-') ?></p>
+            </div>
+            <div>
+                <h3 class="font-bold text-gray-500 mb-2 uppercase text-xs tracking-wide">Contact & Brand</h3>
+                <p class="mb-2"><strong>Rep:</strong> <?= htmlspecialchars($details['rep_name'] ?? '-') ?> (<?= htmlspecialchars($details['rep_role'] ?? '-') ?>)</p>
+                <p class="mb-2"><strong>Contact:</strong> <?= htmlspecialchars($details['rep_email'] ?? '-') ?> / <?= htmlspecialchars($details['rep_phone'] ?? '-') ?></p>
+                <p class="mb-2"><strong>Colors:</strong> <?= htmlspecialchars($details['brand_colors'] ?? '-') ?></p>
+                
+                <?php if (!empty($details['logo_path'])): ?>
+                    <div class="mt-2">
+                        <strong>Uploaded Logo:</strong><br>
+                        <a href="<?= BASE_PATH ?>/uploads/logos/<?= htmlspecialchars($details['logo_path']) ?>" target="_blank" class="text-primary underline text-sm">View Logo</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h3 class="font-bold text-gray-500 mb-2 uppercase text-xs tracking-wide">Project Requirements</h3>
+            <p class="mb-2"><strong>Objectives:</strong> 
+                <?php 
+                    $objs = json_decode($details['objectives'] ?? '[]', true);
+                    echo !empty($objs) ? htmlspecialchars(implode(', ', array_map(fn($s) => ucwords(str_replace('_', ' ', $s)), $objs))) : '-';
+                ?>
+            </p>
+            <p class="mb-2"><strong>Pages:</strong> 
+                <?php 
+                    $pages = json_decode($details['pages'] ?? '[]', true);
+                    echo !empty($pages) ? htmlspecialchars(implode(', ', array_map(fn($s) => ucwords(str_replace('_', ' ', $s)), $pages))) : '-';
+                ?>
+            </p>
+            <p class="mb-2"><strong>Features:</strong> 
+                <?php 
+                    $feats = json_decode($details['features'] ?? '[]', true);
+                    echo !empty($feats) ? htmlspecialchars(implode(', ', array_map(fn($s) => ucwords(str_replace('_', ' ', $s)), $feats))) : '-';
+                ?>
+            </p>
+        </div>
+    </div>
+    <?php endif; ?>
+
 
     <!-- Action Buttons -->
     <div class="mt-6 flex gap-3">

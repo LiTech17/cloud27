@@ -26,13 +26,13 @@ $isAdmin = $_SESSION['is_admin'] ?? false;
             </div>
         </div>
 
-        <!-- Quick Stats (Optional - can be populated with real data) -->
+        <!-- Quick Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
             <div class="card bg-brand-light">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-secondary mb-1">Total Services</p>
-                        <h3 class="text-2xl font-bold text-brand">12</h3>
+                        <h3 class="text-2xl font-bold text-brand"><?= $data['stats']['services_count'] ?? 0 ?></h3>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-brand flex items-center justify-center">
                         <svg class="w-6 h-6 text-inverse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,7 +47,7 @@ $isAdmin = $_SESSION['is_admin'] ?? false;
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-secondary mb-1">Active Packages</p>
-                        <h3 class="text-2xl font-bold text-success">8</h3>
+                        <h3 class="text-2xl font-bold text-success"><?= $data['stats']['packages_count'] ?? 0 ?></h3>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-success flex items-center justify-center">
                         <svg class="w-6 h-6 text-inverse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,8 +61,8 @@ $isAdmin = $_SESSION['is_admin'] ?? false;
             <div class="card bg-warning-light">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-secondary mb-1">Pending Inquiries</p>
-                        <h3 class="text-2xl font-bold text-warning">5</h3>
+                        <p class="text-sm text-secondary mb-1">Active Projects</p>
+                        <h3 class="text-2xl font-bold text-warning"><?= $data['stats']['projects']['total'] ?? 0 ?></h3>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-warning flex items-center justify-center">
                         <svg class="w-6 h-6 text-inverse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ $isAdmin = $_SESSION['is_admin'] ?? false;
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-secondary mb-1">Total Users</p>
-                        <h3 class="text-2xl font-bold text-error">24</h3>
+                        <h3 class="text-2xl font-bold text-error"><?= $data['stats']['users_count'] ?? 0 ?></h3>
                     </div>
                     <div class="w-12 h-12 rounded-full bg-error flex items-center justify-center">
                         <svg class="w-6 h-6 text-inverse" fill="none" stroke="currentColor" viewBox="0 0 24 24">

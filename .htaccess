@@ -12,5 +12,17 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
 # Route all other requests to index.php, passing the full URI path ($1)
-# FIX APPLIED HERE: Added /$1 to ensure the URI path is preserved for the router.
-RewriteRule ^(.*)$ index.php/$1 [L]
+# Route all other requests to index.php, passing the full URI path ($1)
+RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]
+
+# Increase PHP Upload Limits
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value memory_limit 64M
+</IfModule>
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value memory_limit 64M
+</IfModule>

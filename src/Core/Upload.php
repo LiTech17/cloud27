@@ -64,6 +64,7 @@ class Upload {
         if ($this->config['create_dir']) {
             $this->ensureDirectoryExists();
         }
+        error_log("Upload Class Initialized (Patched Version)");
     }
     
     /**
@@ -180,8 +181,20 @@ class Upload {
             return false;
         }
         
+        // Ensure 'error' key exists
+        if (!array_key_exists('error', $file)) {
+            $this->lastError = 'Invalid file upload structure (missing error code).';
+            return false;
+        }
+
+        // Handle null error code (treat as no file or error)
+        if ($file['error'] === null) {
+            $this->lastError = 'File upload error code is null.';
+            return false;
+        }
+
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            $this->lastError = $this->getUploadErrorMessage($file['error']);
+            $this->lastError = $this->getUploadErrorMessage((int)$file['error']);
             error_log("Upload Error: {$this->lastError} (Code: {$file['error']})");
             return false;
         }
@@ -216,7 +229,7 @@ class Upload {
     private function validateMimeType(string $tmpName): bool {
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $tmpName);
-        finfo_close($finfo);
+        unset($finfo);
         
         if (!in_array($mimeType, $this->config['allowed_mime_types'], true)) {
             $this->lastError = "Invalid file type. Detected MIME type: {$mimeType}";
